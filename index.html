@@ -1,1 +1,55 @@
-test
+<!doctype html5>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="css/bootstrap.css">
+<link rel="stylesheet" href="css/jquery-ui.datepicker.css">
+<link rel="stylesheet" href="css/jquery-ui.datepicker.theme.min.css">
+<link rel="stylesheet" href="css/custom.css">
+</head>
+<body>
+    <div class="container">
+        <div class="row-fluid">
+            <div class="span3" id="datepicker"></div>
+            <div class="span8">
+                <form class="form-inline action_panel">
+                    <a href="#">#все</a>
+                    <a href="#">#выполненные</a>
+                    <a href="#">#активые</a>
+                    <div style="float:right">
+                         <input type="number" class="input-small firstelem"  min="0" max="5" value="0">
+                         <input type="text" class="input-large" placeholder="Текст таска">
+                         <button type="submit" class="btn btn-primary">Добавить</button>
+                    </div>
+                </form>
+                <table class="table table-striped table-bordered" id="task">
+                    <th>Статус</th>
+                    <th>Приоритет</th>
+                    <th>Дата начала</th>
+                    <th>Задача</th>
+                    <tbody>
+                    <td>test</td>
+                    <td>test</td>
+                    <td>test</td>
+                    <td>test</td>
+                    </tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-1.12.0.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery-ui.min.js"></script>
+    <script src="js/underscore.js"></script>
+    <script src="js/backbone.js"></script>
+    <script src="js/jquery-ui.datepicker.min.js"></script>
+    <script src ="js/jquery-ui.datepicker.min_ru.js"></script>
+    <script>
+        $(document).ready(function(){
+            $.datepicker.setDefaults( $.datepicker.regional[ "ru" ] );
+            $("#datepicker").datepicker({});
+        })
+    </script>
+</body>
+</html>
