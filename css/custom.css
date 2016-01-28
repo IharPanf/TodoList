@@ -1,6 +1,13 @@
 body {
     background:#E5E5E5;
 }
+.header{
+    text-align:center;
+    font-size:32px;
+    color:royalblue;
+    border-bottom:1px solid dodgerblue;
+    padding:15px 0px 15px 0px;
+}
 .container{
     background:white;
     width:80%;
