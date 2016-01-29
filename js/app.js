@@ -2,40 +2,35 @@
  * Created by i.panfilenko on 28.01.2016.
  */
 
-$(document).ready(function(){
-
+$(document).ready(function() {
+	'use strict'
     var Task = Backbone.Model.extend({
-        initialize:function(){
+        initialize: function() {
             //    console.log('Model initialized');
         },
-        defaults:{
-            status:"new",
-            priority:0,
-            datStart:'01.01.2016',
-            textTask:''
+        defaults: {
+            status  : "new",
+            priority: 0,
+            datStart: '01.01.2016',
+            textTask: ''
         }
     });
 
-    var task = new Task({
-        textTask:'any task'
-    });
-
-
     var CollectionTask = Backbone.Collection.extend({
-        model:Task
+        model: Task
     });
 
     var collectionTask = new CollectionTask (
-            [   {status:"new", priority:0, dateStart:'29.01.2016', textTask:'some task'},
-                {status:"new", priority:1, dateStart:'28.01.2016', textTask:'some task2'},
-                {status:"new", priority:0, dateStart:'27.01.2016', textTask:'some task3'},
-                {status:"new", priority:2, dateStart:'26.01.2016', textTask:'some task4'}
-            ]
-    )
+        [   {status:"new", priority:0, dateStart:'29.01.2016', textTask:'some task'},
+            {status:"new", priority:1, dateStart:'28.01.2016', textTask:'some task2'},
+            {status:"new", priority:0, dateStart:'27.01.2016', textTask:'some task3'},
+            {status:"new", priority:2, dateStart:'26.01.2016', textTask:'some task4'}
+        ]
+    );
 
 //TODO Наверное всетаки стоит вынести в объект collectionTask
     var template = $("#usageList").html();
-
+	
     var itemTasks = [ {status:"new", priority:0, dateStart:'29.01.2016', textTask:'some task'},
                       {status:"new", priority:1, dateStart:'28.01.2016', textTask:'some task2'},
                       {status:"new", priority:0, dateStart:'27.01.2016', textTask:'some task3'},
@@ -45,24 +40,24 @@ $(document).ready(function(){
     var TaskView = Backbone.View.extend({
         tagName : 'div',
         todoTpl : _.template(template,{itemTasks:itemTasks}),
-        initialize: function(){
+        initialize: function() {
             this.$el =  $("#target");
             this.listenTo(collectionTask, 'all', this.render());
             $('.btn').on('click',this.addNewTask);
         },
-        render:function(){
+        render: function() {
             this.$el.html(this.todoTpl);
             return this;
         },
-        close:function(){
+        close: function(){
             alert('close');
         },
-        addNewTask:function(){
+        addNewTask: function(){
            var _this = this;
            var newTextTask = $('#textText').val();
            var priorityTask  = $('#statusText').val();
-           if (newTextTask != "") {
-
+           
+		   if (newTextTask != "") {
                var newTask = new Task({
                     priority : priorityTask,
                     textTask : newTextTask
