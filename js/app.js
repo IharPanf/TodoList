@@ -32,7 +32,7 @@ $(document).ready(function() {
     var TasksView = Backbone.View.extend({
         tagName: 'tbody',
         initialize:function(){
-            this.$el =   $("#target")
+            this.$el =   $("#target");
         },
         render: function() {
             this.collection.each(function(curTask) {
@@ -40,8 +40,24 @@ $(document).ready(function() {
                 this.$el.append(taskView.render().el);
             }, this);
             return this;
-        }
+        },
     });
+    //View for button "Add"
+    var AddNewTaskView = Backbone.View.extend({
+        initialize:function(){
+            $("#add").on('click',this.addNewTask);
+        },
+        addNewTask: function() {
+            var newTextTask = $('#textTask').val();
+            var newPriority = $('#priorityTask').val();
+            var newTask = new Task({
+                textTask : newTextTask,
+                priority : newPriority
+            });
+            var taskView = new TaskView({model:newTask});
+            $("#target").append(taskView.render().el);
+        }
+    })
 
     var tasksCollection = new TaskCollection([
         { textTask: 'SomeTask1', priority: 2 },
@@ -50,6 +66,7 @@ $(document).ready(function() {
         { textTask: 'SomeTask4'}
     ]);
 
+    var addNewTaskView = new AddNewTaskView({ collection: tasksCollection });
     var tasksView = new TasksView({ collection: tasksCollection });
     $(document.body).append(tasksView.render().el);
 
