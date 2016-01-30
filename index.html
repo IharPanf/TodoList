@@ -38,18 +38,10 @@
     </div>
     <!-- Templates-->
     <script type="text/template" id='usageList'>
-        <%
-        _.each(itemTasks,function(item){
-        %>
-        <tr>
-            <td><%- item.status %></td>
-            <td><%- item.priority %></td>
-            <td><%- item.datStart %></td>
-            <td><%- item.textTask %></td>
-        </tr>
-        <%
-        });
-        %>
+            <td><%- status %></td>
+            <td><%- priority %></td>
+            <td><%- dateStart %></td>
+            <td><%- textTask %></td>
     </script>
     <script type="text/template" id='title'>
         <%- title %>
