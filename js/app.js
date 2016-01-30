@@ -14,17 +14,25 @@ $(document).ready(function() {
     });
 
     var TaskCollection = Backbone.Collection.extend({
-            model: Task
+        model: Task
     });
 
     // The View for a Task (one)
     var TaskView = Backbone.View.extend({
         tagName: 'tr',
         template: _.template($('#usageList').html() ),
-
+        initialize:function(){
+            this.model.on('change', this.render, this)
+        },
+        events: {
+            'click .remove' : 'remove'
+        },
         render: function() {
             this.$el.html( this.template(this.model.toJSON()) );
             return this;
+        },
+        remove: function(){
+            this.$el.remove();
         }
     });
 
@@ -32,7 +40,7 @@ $(document).ready(function() {
     var TasksView = Backbone.View.extend({
         tagName: 'tbody',
         initialize:function(){
-            this.$el =   $("#target");
+            this.$el =   $('#target');
         },
         render: function() {
             this.collection.each(function(curTask) {
@@ -42,10 +50,10 @@ $(document).ready(function() {
             return this;
         },
     });
-    //View for button "Add"
+    //View for buttons "Add" and "Remove"
     var AddNewTaskView = Backbone.View.extend({
         initialize:function(){
-            $("#add").on('click',this.addNewTask);
+            $('#add').on('click',this.addNewTask);
         },
         addNewTask: function() {
             var newTextTask = $('#textTask').val();
@@ -55,7 +63,7 @@ $(document).ready(function() {
                 priority : newPriority
             });
             var taskView = new TaskView({model:newTask});
-            $("#target").append(taskView.render().el);
+            $('#target').append(taskView.render().el);
         }
     })
 
@@ -70,8 +78,8 @@ $(document).ready(function() {
     var tasksView = new TasksView({ collection: tasksCollection });
     $(document.body).append(tasksView.render().el);
 
-    var templateHeader =  $("#title").html();
-    $(".header").html(_.template("Simple Todo List"));
+    var templateHeader =  $('#title').html();
+    $('.header').html(_.template('Simple Todo List'));
 
 })
 
