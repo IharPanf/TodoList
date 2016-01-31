@@ -103,6 +103,19 @@ $(document).ready(function() {
     var templateHeader =  $('#title').html();
     $('.header').html(_.template('Simple Todo List'));
 
+    //Filter for task
+    $("#done").on('click',function(){
+        $('#target tr').hide();
+        $('.success').fadeIn();
+    })
+    $("#all").on('click',function(){
+        $('#target tr').fadeIn();
+    })
+    $("#new").on('click',function(){
+        $('#target tr').show();
+        $('.success').hide();
+        $('.warning').hide();
+    })
 })
 
 

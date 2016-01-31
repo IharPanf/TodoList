@@ -25,7 +25,9 @@ body {
 .action_panel {
     margin:30px 0px 30px 30px;
 }
-
+.action_panel div {
+    float:right;
+}
 /* Main */
 td {
     cursor:pointer;
