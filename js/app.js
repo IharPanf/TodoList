@@ -14,7 +14,8 @@ $(document).ready(function() {
     });
 
     var TaskCollection = Backbone.Collection.extend({
-        model: Task
+        model: Task,
+        url: 'task.json'
     });
 
     // The View for a Task (one)
@@ -22,7 +23,7 @@ $(document).ready(function() {
         tagName: 'tr',
         template: _.template($('#usageList').html() ),
         initialize:function(){
-            this.model.on('change', this.render, this)
+            this.model.on('change', this.render, this);
         },
         events: {
             'click .remove' : 'remove'
@@ -41,6 +42,15 @@ $(document).ready(function() {
         tagName: 'tbody',
         initialize:function(){
             this.$el =   $('#target');
+            tasksCollection.fetch({
+                success: function () {
+                //    console.log("JSON file load was successful", tasksCollection);
+                },
+                error: function () {
+                //    console.log('There was some error in loading and processing the JSON file');
+                }
+            });
+            this.render();
         },
         render: function() {
             this.collection.each(function(curTask) {
@@ -50,7 +60,7 @@ $(document).ready(function() {
             return this;
         },
     });
-    //View for buttons "Add" and "Remove"
+    //View for buttons "Add"
     var AddNewTaskView = Backbone.View.extend({
         initialize:function(){
             $('#add').on('click',this.addNewTask);
@@ -58,7 +68,7 @@ $(document).ready(function() {
         addNewTask: function() {
             var newTextTask = $('#textTask').val();
             var newPriority = $('#priorityTask').val();
-            var newTask = new Task({
+            var newTask     = new Task({
                 textTask : newTextTask,
                 priority : newPriority
             });
@@ -67,14 +77,23 @@ $(document).ready(function() {
         }
     })
 
+    var task = new Task();
     var tasksCollection = new TaskCollection([
         { textTask: 'SomeTask1', priority: 2 },
         { textTask: 'SomeTask2', dateStart: '01.02.2016'},
         { textTask: 'SomeTask3'},
         { textTask: 'SomeTask4'}
     ]);
-
-    var addNewTaskView = new AddNewTaskView({ collection: tasksCollection });
+/*    tasksCollection.fetch({
+        success: function() {
+            console.log("JSON file load was successful",  tasksCollection);
+        },
+        error: function(){
+            console.log('There was some error in loading and processing the JSON file');
+        }
+    });
+    console.log(tasksCollection.fetch());
+*/    var addNewTaskView = new AddNewTaskView({ collection: tasksCollection });
     var tasksView = new TasksView({ collection: tasksCollection });
     $(document.body).append(tasksView.render().el);
 
