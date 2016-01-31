@@ -8,7 +8,10 @@ $(document).ready(function() {
         defaults: {
             status   : 'new',
             priority : 0,
-            dateStart: '01.01.2016',
+            dateStart: (function(){
+                var curDate = new Date();
+                return formatDate(curDate);
+            })(),
             textTask : ''
         }
     });
@@ -55,15 +58,15 @@ $(document).ready(function() {
         tagName: 'tbody',
         initialize:function(){
             this.$el =   $('#target');
-            tasksCollection.fetch({
+            this.collection.fetch({
                 success: function () {
-                //    console.log("JSON file load was successful", tasksCollection);
+                    console.log("JSON file load was successful", this);
                 },
                 error: function () {
-                //    console.log('There was some error in loading and processing the JSON file');
+                    console.log('There was some error in loading and processing the JSON file');
                 }
             });
-            this.render();
+            console.log(this.collection.toJSON());
         },
         render: function() {
             this.collection.each(function(curTask) {
@@ -100,6 +103,9 @@ $(document).ready(function() {
     var tasksView = new TasksView({ collection: tasksCollection });
     $(document.body).append(tasksView.render().el);
 
+
+
+    //Header template
     var templateHeader =  $('#title').html();
     $('.header').html(_.template('Simple Todo List'));
 
@@ -116,6 +122,26 @@ $(document).ready(function() {
         $('.success').hide();
         $('.warning').hide();
     })
+    //Datepicker
+    $.datepicker.setDefaults( $.datepicker.regional[ "ru" ] );
+    $("#datepicker").datepicker({
+        dateFormat: 'dd.mm.yy',
+        onSelect: function(date) {
+           // console.log(date);
+        },
+    });
 })
+
+function formatDate(anyDate)  {
+    var day   = anyDate.getDate();
+    var month = anyDate.getMonth() + 1;
+    var year  = anyDate.getFullYear();
+
+    if (day < 10) { day = '0' + day };
+    if (month < 10) { month = '0' + month };
+    if (year < 10) { year = '0' + year };
+
+    return day + '.' + month + '.' + year;
+}
 
 
