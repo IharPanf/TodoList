@@ -26,14 +26,27 @@ $(document).ready(function() {
             this.model.on('change', this.render, this);
         },
         events: {
-            'click .remove' : 'remove'
+            'click .remove' : 'remove',
+            'click td'      : 'changeStatus'
         },
         render: function() {
             this.$el.html( this.template(this.model.toJSON()) );
             return this;
         },
-        remove: function(){
+        remove: function(e){
+            e.stopPropagation();
             this.$el.remove();
+        },
+        changeStatus:function(){
+            if (this.model.get('status') == 'new') {
+                this.model.set('status','archive');
+                this.$el.addClass('warning');
+            } else {
+                if (this.model.get('status') == 'archive') {
+                    this.model.set('status','done');
+                    this.$el.removeClass('warning').addClass('success');
+                }
+            }
         }
     });
 
@@ -76,7 +89,6 @@ $(document).ready(function() {
             $('#target').append(taskView.render().el);
         }
     })
-
     var task = new Task();
     var tasksCollection = new TaskCollection([
         { textTask: 'SomeTask1', priority: 2 },
@@ -84,16 +96,7 @@ $(document).ready(function() {
         { textTask: 'SomeTask3'},
         { textTask: 'SomeTask4'}
     ]);
-/*    tasksCollection.fetch({
-        success: function() {
-            console.log("JSON file load was successful",  tasksCollection);
-        },
-        error: function(){
-            console.log('There was some error in loading and processing the JSON file');
-        }
-    });
-    console.log(tasksCollection.fetch());
-*/    var addNewTaskView = new AddNewTaskView({ collection: tasksCollection });
+    var addNewTaskView = new AddNewTaskView({ collection: tasksCollection });
     var tasksView = new TasksView({ collection: tasksCollection });
     $(document.body).append(tasksView.render().el);
 

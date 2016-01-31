@@ -2,8 +2,5 @@
     { "textTask": "SomeTask1", "priority": "2" },
     { "textTask": "SomeTask2", "dateStart": "01.02.2016"},
     { "textTask": "SomeTask3"},
-    { "textTask": "SomeTask1", "priority": "2" },
-    { "textTask": "SomeTask2", "dateStart": "01.02.2016"},
-    { "textTask": "SomeTask3"},
     { "textTask": "SomeTask4"}
 ]
