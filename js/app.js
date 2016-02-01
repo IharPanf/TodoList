@@ -41,14 +41,19 @@ $(document).ready(function() {
             this.$el.remove();
         },
         changeStatus:function(){
-            if (this.model.get('status') == 'new') {
-                this.model.set('status','archive');
-                this.$el.addClass('warning');
-            } else {
-                if (this.model.get('status') == 'archive') {
+            switch (this.model.get('status')) {
+                case 'new':
+                    this.model.set('status','archive');
+                    this.$el.addClass('warning');
+                    break;
+                case 'archive':
                     this.model.set('status','done');
                     this.$el.removeClass('warning').addClass('success');
-                }
+                    break;
+                case 'done':
+                    this.model.set('status','new');
+                    this.$el.removeClass('warning success');
+                    break;
             }
         }
     });
@@ -58,15 +63,6 @@ $(document).ready(function() {
         tagName: 'tbody',
         initialize:function(){
             this.$el =   $('#target');
-            this.collection.fetch({
-                success: function () {
-                    console.log("JSON file load was successful", this);
-                },
-                error: function () {
-                    console.log('There was some error in loading and processing the JSON file');
-                }
-            });
-            console.log(this.collection.toJSON());
         },
         render: function() {
             this.collection.each(function(curTask) {
@@ -95,12 +91,22 @@ $(document).ready(function() {
     var task = new Task();
     var tasksCollection = new TaskCollection([
         { textTask: 'SomeTask1', priority: 2 },
-        { textTask: 'SomeTask2', dateStart: '01.02.2016'},
+        { textTask: 'SomeTask2', dateStart: '27.01.2016'},
         { textTask: 'SomeTask3'},
         { textTask: 'SomeTask4'}
     ]);
+
     var addNewTaskView = new AddNewTaskView({ collection: tasksCollection });
     var tasksView = new TasksView({ collection: tasksCollection });
+    tasksCollection.fetch({
+        success: function() {
+        //    console.log('JSON load!');
+            tasksView.render();
+        },
+        error : function() {
+        //    console.log('no file');
+        }
+    })
     $(document.body).append(tasksView.render().el);
 
 
@@ -137,8 +143,8 @@ function formatDate(anyDate)  {
     var month = anyDate.getMonth() + 1;
     var year  = anyDate.getFullYear();
 
-    if (day < 10) { day = '0' + day };
-    if (month < 10) { month = '0' + month };
+    if (day < 10)  { day = '0' + day };
+    if (month < 10){ month = '0' + month };
     if (year < 10) { year = '0' + year };
 
     return day + '.' + month + '.' + year;

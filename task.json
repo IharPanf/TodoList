@@ -1,6 +1,6 @@
 [
     { "textTask": "SomeTask5", "priority": "2" },
-    { "textTask": "SomeTask6", "dateStart": "01.02.2016"},
-    { "textTask": "SomeTask7"},
-    { "textTask": "SomeTask8"}
+    { "textTask": "SomeTask6", "dateStart": "31.01.2016"},
+    { "textTask": "SomeTask7", "dateStart": "30.01.2016"},
+    { "textTask": "SomeTask8", "dateStart": "29.01.2016"}
 ]
