@@ -18,13 +18,14 @@ $(document).ready(function() {
     var TaskCollection = Backbone.Collection.extend({
         model     : Task,
         url       : 'task.json',
-        comparator: 'priority'
+        comparator: 'priority',
+
     });
 
     // The View for a Task (one)
     var TaskView = Backbone.View.extend({
         tagName: 'tr',
-        template: _.template($('#usageList').html() ),
+        template: _.template($('#usageList').html()),
         initialize:function(){
             this.model.on('change', this.render, this);
         },
@@ -34,6 +35,12 @@ $(document).ready(function() {
         },
         render: function() {
             this.$el.html( this.template(this.model.toJSON()) );
+            if (this.model.get('status') == 'done') {
+                this.$el.addClass('success');
+            }
+            if (this.model.get('status') == 'archive') {
+                this.$el.addClass('warning');
+            }
             return this;
         },
         remove: function(e){
@@ -63,6 +70,7 @@ $(document).ready(function() {
         tagName: 'tbody',
         initialize:function(){
             this.$el =   $('#target');
+        //    this.collection.on('reset sort', this.render, this);
         },
         render: function() {
             this.collection.each(function(curTask) {
@@ -75,7 +83,8 @@ $(document).ready(function() {
     //View for buttons "Add"
     var AddNewTaskView = Backbone.View.extend({
         initialize:function(){
-            $('#add').on('click',this.addNewTask);
+            this.$el = $('#add');
+            this.$el.on('click',this.addNewTask);
         },
         addNewTask: function() {
             var newTextTask = $('#textTask').val();
@@ -106,18 +115,26 @@ $(document).ready(function() {
     var addNewTaskView = new AddNewTaskView({ collection: tasksCollection });
     $(document.body).append(tasksView.render().el);
 
+
     //Header of table
     $("#priority").on('click',function(){
-        console.log('qwe');
-    })
+        sortView("priority");
+    });
     $("#status").on('click',function(){
-        tasksCollection.comparator = function(tasksCollection) {
-            return -tasksCollection.get("status");
-        };
+        sortView("status");
+    });
+    $("#dateStart").on('click',function(){
+        sortView("dateStart");
+    });
+    //Sorting for header
+    function sortView(paramSort){
+        tasksCollection.comparator = function (tasksCollection) {
+            return tasksCollection.get(paramSort);
+        }
         tasksCollection.sort();
-        console.log(tasksCollection.toJSON());
-    })
-
+        tasksView.$el.find('tr').remove();
+        tasksView.render();
+    }
     //Header template
     var templateHeader =  $('#title').html();
     $('.header').html(_.template('Simple Todo List'));
@@ -126,23 +143,32 @@ $(document).ready(function() {
     $("#done").on('click',function(){
         $('#target tr').hide();
         $('.success').fadeIn();
-    })
+    });
     $("#all").on('click',function(){
         $('#target tr').fadeIn();
-    })
+    });
     $("#new").on('click',function(){
         $('#target tr').show();
         $('.success').hide();
         $('.warning').hide();
-    })
+    });
+    $('#forDate').on('click',function(){
+        var selectDate = Date.parse($("#datepicker").datepicker('getDate'));
+        var selectDateStr = selectDate.toString('dd.MM.yyyy');
+        //жесткая привязка к DOM
+        $('#target').find('tr').each(function(){
+           if ($(this).find('td').eq(2).text() != selectDateStr) {
+               $(this).hide();
+           } else {
+               $(this).show();
+           }
+        });
+    });
     //Datepicker
     $.datepicker.setDefaults( $.datepicker.regional[ "ru" ] );
-    $("#datepicker").datepicker({
-        dateFormat: 'dd.mm.yy',
-        onSelect: function(date) {
-           // console.log(date);
-        },
-    });
+    $("#datepicker").datepicker();
+
+
 })
 
 
