@@ -9,8 +9,7 @@ $(document).ready(function() {
             status   : 'new',
             priority : 0,
             dateStart: (function(){
-                var curDate = new Date();
-                return formatDate(curDate);
+                return Date.today().toString('dd.MM.yyyy');
             })(),
             textTask : ''
         }
@@ -85,7 +84,8 @@ $(document).ready(function() {
                 textTask : newTextTask,
                 priority : newPriority,
                 dateStart:(function(){
-                    return formatDate($("#datepicker").datepicker('getDate'));
+                    var selectDate = Date.parse($("#datepicker").datepicker('getDate'));
+                    return selectDate.toString('dd.MM.yyyy');
                 })()
             });
             var taskView = new TaskView({model:newTask});
@@ -97,16 +97,26 @@ $(document).ready(function() {
     tasksCollection.comparator = function(tasksCollection) {
         return -tasksCollection.get("priority");
     };
-    var addNewTaskView = new AddNewTaskView({ collection: tasksCollection });
     var tasksView = new TasksView({ collection: tasksCollection });
     tasksCollection.fetch({
         success: function() {
             tasksView.render();
         }
     });
+    var addNewTaskView = new AddNewTaskView({ collection: tasksCollection });
     $(document.body).append(tasksView.render().el);
 
-
+    //Header of table
+    $("#priority").on('click',function(){
+        console.log('qwe');
+    })
+    $("#status").on('click',function(){
+        tasksCollection.comparator = function(tasksCollection) {
+            return -tasksCollection.get("status");
+        };
+        tasksCollection.sort();
+        console.log(tasksCollection.toJSON());
+    })
 
     //Header template
     var templateHeader =  $('#title').html();
@@ -135,16 +145,5 @@ $(document).ready(function() {
     });
 })
 
-function formatDate(anyDate)  {
-    var day   = anyDate.getDate();
-    var month = anyDate.getMonth() + 1;
-    var year  = anyDate.getFullYear();
-
-    if (day < 10)  { day = '0' + day };
-    if (month < 10){ month = '0' + month };
-    if (year < 10) { year = '0' + year };
-
-    return day + '.' + month + '.' + year;
-}
 
 

@@ -19,9 +19,6 @@ body {
     border-bottom:1px solid dodgerblue;
     padding:15px 0px 15px 0px;
 }
-#task{
-    margin:30px;
-}
 .action_panel {
     margin:30px 0px 30px 30px;
 }
@@ -29,6 +26,15 @@ body {
     float:right;
 }
 /* Main */
+#task{
+    margin:30px;
+}
+#task tr a {
+    color: #333333;
+}
 td {
     cursor:pointer;
+}
+.table th, .table td {
+    text-align:center;
 }
