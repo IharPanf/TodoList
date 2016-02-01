@@ -17,8 +17,9 @@ $(document).ready(function() {
     });
 
     var TaskCollection = Backbone.Collection.extend({
-        model: Task,
-        url: 'task.json'
+        model     : Task,
+        url       : 'task.json',
+        comparator: 'priority'
     });
 
     // The View for a Task (one)
@@ -82,31 +83,27 @@ $(document).ready(function() {
             var newPriority = $('#priorityTask').val();
             var newTask     = new Task({
                 textTask : newTextTask,
-                priority : newPriority
+                priority : newPriority,
+                dateStart:(function(){
+                    return formatDate($("#datepicker").datepicker('getDate'));
+                })()
             });
             var taskView = new TaskView({model:newTask});
             $('#target').append(taskView.render().el);
         }
     })
     var task = new Task();
-    var tasksCollection = new TaskCollection([
-        { textTask: 'SomeTask1', priority: 2 },
-        { textTask: 'SomeTask2', dateStart: '27.01.2016'},
-        { textTask: 'SomeTask3'},
-        { textTask: 'SomeTask4'}
-    ]);
-
+    var tasksCollection = new TaskCollection();
+    tasksCollection.comparator = function(tasksCollection) {
+        return -tasksCollection.get("priority");
+    };
     var addNewTaskView = new AddNewTaskView({ collection: tasksCollection });
     var tasksView = new TasksView({ collection: tasksCollection });
     tasksCollection.fetch({
         success: function() {
-        //    console.log('JSON load!');
             tasksView.render();
-        },
-        error : function() {
-        //    console.log('no file');
         }
-    })
+    });
     $(document.body).append(tasksView.render().el);
 
 
