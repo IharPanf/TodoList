@@ -6,6 +6,8 @@ body {
     width:80%;
     margin-top:5%;
     margin-bottom:5%;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    min-height:75%;
 }
 #datepicker{
     padding:20px;

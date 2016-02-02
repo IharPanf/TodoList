@@ -70,7 +70,6 @@ $(document).ready(function() {
         tagName: 'tbody',
         initialize:function(){
             this.$el =   $('#target');
-        //    this.collection.on('reset sort', this.render, this);
         },
         render: function() {
             this.collection.each(function(curTask) {
@@ -80,28 +79,8 @@ $(document).ready(function() {
             return this;
         },
     });
-    //View for buttons "Add"
-    var AddNewTaskView = Backbone.View.extend({
-        initialize:function(){
-            this.$el = $('#add');
-            this.$el.on('click',this.addNewTask);
-        },
-        addNewTask: function() {
-            var newTextTask = $('#textTask').val();
-            var newPriority = $('#priorityTask').val();
-            var newTask     = new Task({
-                textTask : newTextTask,
-                priority : newPriority,
-                dateStart:(function(){
-                    var selectDate = Date.parse($("#datepicker").datepicker('getDate'));
-                    return selectDate.toString('dd.MM.yyyy');
-                })()
-            });
-            var taskView = new TaskView({model:newTask});
-            $('#target').append(taskView.render().el);
-        }
-    })
-    var task = new Task();
+
+//  var task = new Task();
     var tasksCollection = new TaskCollection();
     tasksCollection.comparator = function(tasksCollection) {
         return -tasksCollection.get("priority");
@@ -112,20 +91,36 @@ $(document).ready(function() {
             tasksView.render();
         }
     });
-    var addNewTaskView = new AddNewTaskView({ collection: tasksCollection });
     $(document.body).append(tasksView.render().el);
 
 
     //Header of table
-    $("#priority").on('click',function(){
+    $('#add').on('click',function(){        //add new task
+        var newTextTask = $('#textTask').val();
+        var newPriority = $('#priorityTask').val();
+        var newTask     = new Task({
+            textTask : newTextTask,
+            priority : newPriority,
+            dateStart:(function(){
+                var selectDate = Date.parse($("#datepicker").datepicker('getDate'));
+                return selectDate.toString('dd.MM.yyyy');
+            })()
+        });
+        var taskView = new TaskView({model:newTask});
+        tasksCollection.create(newTask);
         sortView("priority");
+    })
+
+    $("#priority").on('click',function(){
+        sortView("priority");   // sorting for alphabet
     });
     $("#status").on('click',function(){
-        sortView("status");
+        sortView("status");     // sorting for alphabet
     });
     $("#dateStart").on('click',function(){
-        sortView("dateStart");
+        sortView("dateStart"); // sorting for alphabet
     });
+
     //Sorting for header
     function sortView(paramSort){
         tasksCollection.comparator = function (tasksCollection) {
