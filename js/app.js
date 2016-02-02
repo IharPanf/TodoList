@@ -17,7 +17,7 @@ $(document).ready(function() {
 
     var TaskCollection = Backbone.Collection.extend({
         model     : Task,
-        url       : 'task.json',
+        url       : 'backend/index.php',
         comparator: 'priority'
     });
 
@@ -88,7 +88,11 @@ $(document).ready(function() {
     var tasksView = new TasksView({ collection: tasksCollection });
     tasksCollection.fetch({
         success: function() {
+            console.log('JSON load');
             tasksView.render();
+        },
+        error : function() {
+            console.log('ERROR');
         }
     });
     $(document.body).append(tasksView.render().el);

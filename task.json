@@ -1,6 +1,0 @@
-[
-    { "textTask": "SomeTask5", "priority": "2" },
-    { "textTask": "SomeTask6", "dateStart": "31.01.2016"},
-    { "textTask": "SomeTask7","priority": "3", "dateStart": "30.01.2016","status":"archive"},
-    { "textTask": "SomeTask8", "dateStart": "29.01.2016","status":"done"}
-]
