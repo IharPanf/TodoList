@@ -18,8 +18,7 @@ $(document).ready(function() {
     var TaskCollection = Backbone.Collection.extend({
         model     : Task,
         url       : 'task.json',
-        comparator: 'priority',
-
+        comparator: 'priority'
     });
 
     // The View for a Task (one)
@@ -98,6 +97,10 @@ $(document).ready(function() {
     $('#add').on('click',function(){        //add new task
         var newTextTask = $('#textTask').val();
         var newPriority = $('#priorityTask').val();
+        if (newTextTask == '') {
+            alert("Text task is empty!");
+            return false;
+        }
         var newTask     = new Task({
             textTask : newTextTask,
             priority : newPriority,
@@ -130,6 +133,7 @@ $(document).ready(function() {
         tasksView.$el.find('tr').remove();
         tasksView.render();
     }
+
     //Header template
     var templateHeader =  $('#title').html();
     $('.header').html(_.template('Simple Todo List'));
@@ -150,7 +154,7 @@ $(document).ready(function() {
     $('#forDate').on('click',function(){
         var selectDate = Date.parse($("#datepicker").datepicker('getDate'));
         var selectDateStr = selectDate.toString('dd.MM.yyyy');
-        //жесткая привязка к DOM
+        //Жесткая привязка к DOM
         $('#target').find('tr').each(function(){
            if ($(this).find('td').eq(2).text() != selectDateStr) {
                $(this).hide();
@@ -159,6 +163,7 @@ $(document).ready(function() {
            }
         });
     });
+
     //Datepicker
     $.datepicker.setDefaults( $.datepicker.regional[ "ru" ] );
     $("#datepicker").datepicker();
