@@ -43,6 +43,7 @@ $(document).ready(function() {
             return this;
         },
         remove: function(e){
+            tasksCollection.remove(this.model);
             e.stopPropagation();
             this.$el.remove();
         },

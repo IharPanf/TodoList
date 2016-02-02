@@ -10,11 +10,12 @@ class ApiController extends CController
 						->select('name')
 						->from('status')
 						->query();
+//		foreach($dataReader as $row) {
+//		}
 
-		foreach($dataReader as $row) {
-			print_r($row);
-		}
 		// получаем все строки разом в виде массива
-	//	$rows=$dataReader->readAll();
+		$rows = $dataReader->readAll();
+		echo CJavaScript::jsonEncode($rows);
+//		Yii::app()->end();
 	}
 }
