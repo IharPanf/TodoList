@@ -1,8 +1,9 @@
 <?php
 
 return array(
+	'basePath'=>dirname(__FILE__).DIRECTORY_SEPARATOR.'..',
 	'name'=>'Use Rest Api',
-	'defaultController'=>'api',
+	'defaultController'=>'restapi',
 	'components'=>array(
 		'db' => array(
 				'connectionString' => 'mysql:host=localhost;dbname=todo',
@@ -16,21 +17,10 @@ return array(
 			'urlFormat'      => 'path',
 			'showScriptName' => false,
 			'rules'          => array(
-				array(
-					'<controller>/view',
-					'pattern' => '<controller:\w+>/view/<id:\d+>',
-					'verb'    => 'GET'
-				),
-				array(
-					'<controller>/create',
-					'pattern' => '<controller:\w+>/create',
-					'verb'    => 'POST'
-				),
-				array(
-					'<controller>/delete',
-					'pattern' => '<controller:\w+>/delete',
-					'verb'    => 'DELETE'
-				)
+				'' => 'restapi/show',
+//				'add' => 'restapi/add'
+//				array('show' => 'restapi/show', 'verb' => 'POST'),
+//			'<action>'=>'<controller>/<action>'
 			)
 		)
 	),

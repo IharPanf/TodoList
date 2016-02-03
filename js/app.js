@@ -9,15 +9,16 @@ $(document).ready(function() {
             status   : 'new',
             priority : 0,
             dateStart: (function(){
-                return Date.today().toString('dd.MM.yyyy');
+                return Date.today().toString('yyyy-MM-dd');
             })(),
             textTask : ''
-        }
+        },
+    //    url     : 'backend/?action=update'
     });
 
     var TaskCollection = Backbone.Collection.extend({
         model     : Task,
-        url       : 'backend/index.php',
+        url       : 'backend',
         comparator: 'priority'
     });
 
@@ -43,6 +44,8 @@ $(document).ready(function() {
             return this;
         },
         remove: function(e){
+            //////
+        //    tasksCollection.url = "backend/?action=remove";
             tasksCollection.remove(this.model);
             e.stopPropagation();
             this.$el.remove();
@@ -62,6 +65,7 @@ $(document).ready(function() {
                     this.$el.removeClass('warning success');
                     break;
             }
+        //    this.model.save();
         }
     });
 
@@ -111,10 +115,12 @@ $(document).ready(function() {
             priority : newPriority,
             dateStart:(function(){
                 var selectDate = Date.parse($("#datepicker").datepicker('getDate'));
-                return selectDate.toString('dd.MM.yyyy');
+                return selectDate.toString('yyyy-MM-dd');
             })()
         });
         var taskView = new TaskView({model:newTask});
+        ////
+        tasksCollection.url = "backend/?action=add";
         tasksCollection.create(newTask);
         sortView("priority");
     })
