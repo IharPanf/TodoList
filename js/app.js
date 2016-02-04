@@ -44,10 +44,10 @@ $(document).ready(function() {
             return this;
         },
         remove: function(e){
-            tasksCollection.remove(this.model);
-            this.model.url = "backend/?action=destroy";
-            console.log(this.model);
+            var idDelete = this.model.get('id');
+            this.model.url = "backend/?action=destroy&id="+idDelete;
             this.model.destroy();
+
             e.stopPropagation();
             this.$el.remove();
         },

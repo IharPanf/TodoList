@@ -59,9 +59,7 @@ class RestApiController extends CController
 	public function actionDestroy()
 	{
 		$connection = Yii::app()->db;
-		$request = file_get_contents('php://input');
-		$data = (array) json_decode($request);
-		$id = $data['id'];
+		$id = $_GET['id'];
 		$sql = "DELETE FROM `todos` WHERE id = $id";
 		$dataReader = $connection->createCommand($sql);
 		$dataReader->query();
