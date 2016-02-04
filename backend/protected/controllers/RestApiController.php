@@ -21,7 +21,21 @@ class RestApiController extends CController
 	public function actionAdd()
 	{
 		$connection = Yii::app()->db;
-		$sql = "INSERT INTO  `todos` (`task`, `date_task`,`id_status` ,`id_priority` ) VALUES ('qweqweqe', '2016-12-01', 1, 1)";
+		$request = file_get_contents('php://input');
+		$data = (array) json_decode($request);
+		$task = $data['textTask'];
+		$priority = $data['priority'];
+		$status = $data['status'];
+		$dateStart = $data['dateStart'];
+		$sql = "INSERT INTO `todos` (`task`,
+									 `date_task`,
+									 `status` ,
+									 `priority` )
+					   		VALUES ('$task',
+				 			   		'$dateStart',
+				 			   		'$status',
+				 		 			'$priority')";
+
 		$dataReader = $connection->createCommand($sql);
 		$dataReader->query();
 	}
@@ -29,27 +43,29 @@ class RestApiController extends CController
 	{
 		$connection = Yii::app()->db;
 		$dataReader = $connection->createCommand()
-			->select('task as textTask,
-								  date_task as dateStart,
-								  name as status,
-								  val_priority as priority')
-			->from('todos a')
-			->join('status b', 'b.id = a.id_status')
-			->join('priority c', 'c.id = a.id_priority')
-			->query();
+							->select('id,
+									  task as textTask,
+								  	  date_task as dateStart,
+								      status,
+								      priority')
+							->from('todos')
+							->query();
 
 		// получаем все строки разом в виде массива
 		$rows = $dataReader->readAll();
 		echo CJavaScript::jsonEncode($rows);
 		Yii::app()->end();
 	}
-	public function actionDelete()
+	public function actionDestroy()
 	{
-/*		$connection = Yii::app()->db;
-		$sql = "DELETE FROM `todos` WHERE id > 4";
+		$connection = Yii::app()->db;
+		$request = file_get_contents('php://input');
+		$data = (array) json_decode($request);
+		$task = $data['id'];
+		$sql = "DELETE FROM `todos` WHERE id = $task";
 		$dataReader = $connection->createCommand($sql);
 		$dataReader->query();
-*/	}
+	}
 	public function actionUpdate()
 	{
 /*		$connection = Yii::app()->db;
