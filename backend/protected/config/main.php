@@ -18,9 +18,7 @@ return array(
 			'showScriptName' => false,
 			'rules'          => array(
 				'' => 'restapi/show',
-//				'add' => 'restapi/add'
-//				array('show' => 'restapi/show', 'verb' => 'POST'),
-//			'<action>'=>'<controller>/<action>'
+				'<action>'=>'<controller>/<action>'
 			)
 		)
 	),

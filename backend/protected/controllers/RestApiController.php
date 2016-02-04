@@ -16,7 +16,7 @@ class RestApiController extends CController
 		}
 	}
 
-	public function actionIndex(){echo '+++';}
+	public function actionIndex(){echo 'default action';}
 
 	public function actionAdd()
 	{
@@ -61,16 +61,20 @@ class RestApiController extends CController
 		$connection = Yii::app()->db;
 		$request = file_get_contents('php://input');
 		$data = (array) json_decode($request);
-		$task = $data['id'];
-		$sql = "DELETE FROM `todos` WHERE id = $task";
+		$id = $data['id'];
+		$sql = "DELETE FROM `todos` WHERE id = $id";
 		$dataReader = $connection->createCommand($sql);
 		$dataReader->query();
 	}
 	public function actionUpdate()
 	{
-/*		$connection = Yii::app()->db;
-		$sql = "UPDATE `todos` SET `id_status`= 0 WHERE id > 4";
+		$connection = Yii::app()->db;
+		$request = file_get_contents('php://input');
+		$data = (array) json_decode($request);
+		$status = $data['status'];
+		$id = $data['id'];
+		$sql = "UPDATE `todos` SET `status`= '$status' WHERE id = $id";
 		$dataReader = $connection->createCommand($sql);
 		$dataReader->query();
-*/	}
+	}
 }

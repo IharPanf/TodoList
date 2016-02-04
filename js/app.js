@@ -44,9 +44,10 @@ $(document).ready(function() {
             return this;
         },
         remove: function(e){
-            //////
-        //    tasksCollection.url = "backend/?action=remove";
             tasksCollection.remove(this.model);
+            this.model.url = "backend/?action=destroy";
+            console.log(this.model);
+            this.model.destroy();
             e.stopPropagation();
             this.$el.remove();
         },
@@ -65,7 +66,8 @@ $(document).ready(function() {
                     this.$el.removeClass('warning success');
                     break;
             }
-        //    this.model.save();
+            this.model.url = "backend/?action=update";
+            this.model.save();
         }
     });
 
@@ -119,7 +121,6 @@ $(document).ready(function() {
             })()
         });
         var taskView = new TaskView({model:newTask});
-        ////
         tasksCollection.url = "backend/?action=add";
         tasksCollection.create(newTask);
         sortView("priority");
