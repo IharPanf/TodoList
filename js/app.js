@@ -12,8 +12,7 @@ $(document).ready(function() {
                 return Date.today().toString('yyyy-MM-dd');
             })(),
             textTask : ''
-        },
-    //    url     : 'backend/?action=update'
+        }
     });
 
     var TaskCollection = Backbone.Collection.extend({
@@ -47,7 +46,6 @@ $(document).ready(function() {
             var idDelete = this.model.get('id');
             this.model.url = "backend/?action=destroy&id="+idDelete;
             this.model.destroy();
-
             e.stopPropagation();
             this.$el.remove();
         },
@@ -86,7 +84,6 @@ $(document).ready(function() {
         },
     });
 
-//  var task = new Task();
     var tasksCollection = new TaskCollection();
     tasksCollection.comparator = function(tasksCollection) {
         return -tasksCollection.get("priority");
@@ -165,7 +162,7 @@ $(document).ready(function() {
     });
     $('#forDate').on('click',function(){
         var selectDate = Date.parse($("#datepicker").datepicker('getDate'));
-        var selectDateStr = selectDate.toString('dd.MM.yyyy');
+        var selectDateStr = selectDate.toString('yyyy-MM-dd');
         //Жесткая привязка к DOM
         $('#target').find('tr').each(function(){
            if ($(this).find('td').eq(2).text() != selectDateStr) {
