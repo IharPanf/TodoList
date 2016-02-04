@@ -4,6 +4,9 @@ return array(
 	'basePath'=>dirname(__FILE__).DIRECTORY_SEPARATOR.'..',
 	'name'=>'Use Rest Api',
 	'defaultController'=>'restapi',
+	'import'=>array(
+		'application.models.*',
+	),
 	'components'=>array(
 		'db' => array(
 				'connectionString' => 'mysql:host=localhost;dbname=todo',

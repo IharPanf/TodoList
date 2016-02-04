@@ -176,8 +176,6 @@ $(document).ready(function() {
     //Datepicker
     $.datepicker.setDefaults( $.datepicker.regional[ "ru" ] );
     $("#datepicker").datepicker();
-
-
 })
 
 
