@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Хост: 127.0.0.1:3306
--- Время создания: Фев 04 2016 г., 11:04
+-- Время создания: Фев 05 2016 г., 12:56
 -- Версия сервера: 5.5.45
 -- Версия PHP: 5.3.29
 
@@ -28,19 +28,19 @@ SET time_zone = "+00:00";
 
 CREATE TABLE IF NOT EXISTS `todos` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `task` varchar(255) NOT NULL,
-  `date_task` date NOT NULL,
+  `textTask` varchar(255) NOT NULL,
+  `dateStart` date NOT NULL,
   `status` varchar(20) NOT NULL,
   `priority` int(5) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=61 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=58 ;
 
 --
 -- Дамп данных таблицы `todos`
 --
 
-INSERT INTO `todos` (`id`, `task`, `date_task`, `status`, `priority`) VALUES
-(1, 'почитать о Backbone.js', '2016-01-29', 'done', 3),
+INSERT INTO `todos` (`id`, `textTask`, `dateStart`, `status`, `priority`) VALUES
+(1, 'почитать о Backbone.js', '2016-01-29', 'new', 3),
 (2, 'подключить Underscore для использования шаблонов в BackBone', '2016-02-01', 'done', 2),
 (3, 'написать фронтенд для проекта', '2016-02-01', 'archive', 2),
 (4, 'прочитать о Yii', '2016-02-02', 'done', 2),
