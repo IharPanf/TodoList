@@ -20,16 +20,7 @@ class RestApiController extends CController
 
 	public function actionAdd()
 	{
-		$request = file_get_contents('php://input');
-		if (json_decode($request))
-		{
-			$data = (array) json_decode($request);
-		}
-		else
-		{
-			$this->_sendResponse(400, 'Error: bad format for JSON');
-			Yii::app()->end();
-		}
+		$data = Yii::app()->request->getRestParams();
 		$newTask = new Todos;
 		$newTask->textTask = $data['textTask'];
 		$newTask->priority = $data['priority'];
@@ -51,7 +42,7 @@ class RestApiController extends CController
 	}
 	public function actionDestroy()
 	{
-		$id 		= (int)$_GET['id'];
+		$id 		= (int) Yii::app()->request->getParam('id');
 		$newTask 	= Todos::model()->findByPk($id);
 		if($newTask->delete() > 0)
 		{
@@ -64,16 +55,7 @@ class RestApiController extends CController
 	}
 	public function actionUpdate()
 	{
-		$request = file_get_contents('php://input');
-		if (json_decode($request))
-		{
-			$data = (array) json_decode($request);
-		}
-		else
-		{
-			$this->_sendResponse(400, 'Error: bad format for JSON');
-			Yii::app()->end();
-		}
+		$data = Yii::app()->request->getRestParams();
 		$newTask = Todos::model()->findByPk($data['id']);
 		$newTask->status = $data['status'];
 		if($newTask->save())
