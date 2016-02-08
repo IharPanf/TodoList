@@ -22,10 +22,10 @@ class RestApiController extends CController
 	{
 		$data = Yii::app()->request->getRestParams();
 		$newTask = new Todos;
-		$newTask->textTask = $data['textTask'];
-		$newTask->priority = $data['priority'];
-		$newTask->status = $data['status'];
-		$newTask->dateStart = $data['dateStart'];
+		$newTask->textTask 	= $this->_validateValue($data['textTask']);
+		$newTask->priority 	= $this->_validateValue($data['priority']);
+		$newTask->status 	= $this->_validateValue($data['status']);
+		$newTask->dateStart = $this->_validateValue($data['dateStart']);
 		if($newTask->save())
 		{
 			$this->_sendResponse(200, CJSON::encode($newTask));
@@ -56,8 +56,8 @@ class RestApiController extends CController
 	public function actionUpdate()
 	{
 		$data = Yii::app()->request->getRestParams();
-		$newTask = Todos::model()->findByPk($data['id']);
-		$newTask->status = $data['status'];
+		$newTask = Todos::model()->findByPk((int)$data['id']);
+		$newTask->status = $this->_validateValue($data['status']);
 		if($newTask->save())
 		{
 			$this->_sendResponse(200, CJSON::encode($newTask));
@@ -132,5 +132,18 @@ class RestApiController extends CController
 			501 => 'Not Implemented',
 		);
 		return (isset($codes[$status])) ? $codes[$status] : '';
+	}
+
+	private function _validateValue($value)
+	{
+		if (empty($value))
+		{
+			$this->_sendResponse(400, 'Error: bad value in JSON' );
+		}
+		else
+		{
+			return $value;
+		}
+
 	}
 }
