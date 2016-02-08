@@ -163,7 +163,7 @@ $(document).ready(function() {
     $('#forDate').on('click',function(){
         var selectDate = Date.parse($("#datepicker").datepicker('getDate'));
         var selectDateStr = selectDate.toString('yyyy-MM-dd');
-        //Жесткая привязка к DOM
+        //Р–РµСЃС‚РєР°СЏ РїСЂРёРІСЏР·РєР° Рє DOM
         $('#target').find('tr').each(function(){
            if ($(this).find('td').eq(2).text() != selectDateStr) {
                $(this).hide();

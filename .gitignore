@@ -1,3 +1,6 @@
 .git
 .idea
 .backend/framework/*.*
+insertnewdata.php
+composer.phar
+vendor

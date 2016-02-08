@@ -11,7 +11,7 @@ class RestApiController extends CController
 
 			if (in_array($action, get_class_methods(__CLASS__)))
 			{
-				call_user_func(array(get_class(), $action)); // Вызываем действие
+				call_user_func(array(get_class(), $action)); // Р’С‹Р·С‹РІР°РµРј РґРµР№СЃС‚РІРёРµ
 			}
 		}
 	}
