@@ -17,4 +17,11 @@ class Todos extends CActiveRecord
     {
         return 'todos';
     }
+
+    public function rules(){
+        return array(
+            array('textTask, priority, status, dateStart', 'required'),
+            array('priority, id', 'numerical', 'integerOnly'=>true)
+        );
+    }
 }

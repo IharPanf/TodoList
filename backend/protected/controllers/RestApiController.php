@@ -22,10 +22,14 @@ class RestApiController extends CController
 	{
 		$data = Yii::app()->request->getRestParams();
 		$newTask = new Todos;
-		$newTask->textTask 	= $this->_validateValue($data['textTask']);
-		$newTask->priority 	= $this->_validateValue($data['priority']);
-		$newTask->status 	= $this->_validateValue($data['status']);
-		$newTask->dateStart = $this->_validateValue($data['dateStart']);
+		$newTask->textTask 	= $data['textTask'];
+		$newTask->priority 	= $data['priority'];
+		$newTask->status 	= $data['status'];
+		$newTask->dateStart = $data['dateStart'];
+		if(!$newTask->validate())
+		{
+			$this->_sendResponse(400, 'Error: the model is bad');
+		}
 		if($newTask->save())
 		{
 			$this->_sendResponse(200, CJSON::encode($newTask));
@@ -35,11 +39,13 @@ class RestApiController extends CController
 			$this->_sendResponse(500, 'Error: the model is not saved' );
 		}
 	}
+
 	public function actionShow()
 	{
 		$models = Todos::model()->findAll();
 		$this->_sendResponse(200, CJavaScript::jsonEncode($models));
 	}
+
 	public function actionDestroy()
 	{
 		$id 		= (int) Yii::app()->request->getParam('id');
@@ -53,11 +59,16 @@ class RestApiController extends CController
 			$this->_sendResponse(500, "Error: Couldn't delete model");
 		}
 	}
+
 	public function actionUpdate()
 	{
 		$data = Yii::app()->request->getRestParams();
 		$newTask = Todos::model()->findByPk((int)$data['id']);
-		$newTask->status = $this->_validateValue($data['status']);
+		$newTask->status = $data['status'];
+		if(!$newTask->validate())
+		{
+			$this->_sendResponse(400, 'Error: the model is bad');
+		}
 		if($newTask->save())
 		{
 			$this->_sendResponse(200, CJSON::encode($newTask));
@@ -132,18 +143,5 @@ class RestApiController extends CController
 			501 => 'Not Implemented',
 		);
 		return (isset($codes[$status])) ? $codes[$status] : '';
-	}
-
-	private function _validateValue($value)
-	{
-		if (empty($value))
-		{
-			$this->_sendResponse(400, 'Error: bad value in JSON' );
-		}
-		else
-		{
-			return $value;
-		}
-
 	}
 }
