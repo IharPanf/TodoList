@@ -11,9 +11,12 @@ $(document).ready(function() {
         Collections: {},
         Views: {}
     };
+
     window.Socket = {
-         Connects: {}
+         Connects: {},
+         USEWEBSOCKET : true
     };
+
 /////////////////  BACKBONE ///////////////////////////////////
     var BASEURL = '../../backend/application';
     App.Models.Task = Backbone.Model.extend({
@@ -170,7 +173,10 @@ $(document).ready(function() {
         };
     })();
 
-    Socket.Connects = Singleton.getInstance();
+    if (Socket.USEWEBSOCKET) {
+        Socket.Connects = Singleton.getInstance();
+    }
+
     Socket.Connects.msg = "send";
     Socket.Connects.onopen = function(e) {
         console.log("Connection established!");
@@ -180,6 +186,12 @@ $(document).ready(function() {
         console.log("Message add!");
         updateData(); //Update data on client from server
     };
+
+    if (!("send" in Socket.Connects)) {
+        Socket.Connects.send = function(e){
+            console.log("Send message!");
+        };
+    }
 
 ////////////////// DOM ///////////////////////////////////////
     $("#priority").on('click',function(){
