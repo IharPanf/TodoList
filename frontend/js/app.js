@@ -116,13 +116,15 @@ $(document).ready(function() {
         var taskView = new TaskView({model:newTask});
         tasksCollection.url = BASEURL + "/?action=add";
         tasksCollection.create(newTask);
-        sortView("priority");
         conn.send(msg);
+        sortView("priority");
+
     });
 
     //Update data on client from server
     function updateData() {
         tasksView.$el.find('tr').remove();
+        tasksCollection.url = BASEURL;
         tasksCollection.fetch({
             success: function() {
                 console.log('JSON load');
