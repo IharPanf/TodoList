@@ -5,9 +5,18 @@
 $(document).ready(function() {
 
     'use strict'
+
+    window.App = {
+        Models: {},
+        Collections: {},
+        Views: {}
+    };
+    window.Socket = {
+         Connects: {}
+    };
 /////////////////  BACKBONE ///////////////////////////////////
     var BASEURL = '../../backend/application';
-    var Task = Backbone.Model.extend({
+    App.Models.Task = Backbone.Model.extend({
         defaults: {
             status   : 'new',
             priority : 0,
@@ -18,14 +27,14 @@ $(document).ready(function() {
         }
     });
 
-    var TaskCollection = Backbone.Collection.extend({
-        model     : Task,
+    App.Collections.TaskCollection = Backbone.Collection.extend({
+        model     : App.Models.Task,
         url       : BASEURL,
         comparator: 'priority'
     });
 
     // The View for a Task (one)
-    var TaskView = Backbone.View.extend({
+    App.Views.TaskView = Backbone.View.extend({
         tagName: 'tr',
         template: _.template($('#usageList').html()),
         initialize:function(){
@@ -49,9 +58,9 @@ $(document).ready(function() {
             var idDelete = this.model.get('id');
             this.model.url = BASEURL + "/?action=destroy&id="+idDelete;
             this.model.destroy();
+            Socket.Connects.send(this.msg);
             e.stopPropagation();
             this.$el.remove();
-            conn.send(msg);
         },
         changeStatus:function(){
             switch (this.model.get('status')) {
@@ -70,30 +79,30 @@ $(document).ready(function() {
             }
             this.model.url = BASEURL + "/?action=update";
             this.model.save();
-            conn.send(msg);
+            Socket.Connects.send(this.msg);
         }
     });
 
     // View for all Tasks (all of them)
-    var TasksView = Backbone.View.extend({
+    App.Views.TasksView = Backbone.View.extend({
         tagName: 'tbody',
         initialize:function(){
             this.$el =   $('#target');
         },
         render: function() {
             this.collection.each(function(curTask) {
-                var taskView = new TaskView({ model: curTask });
+                var taskView = new App.Views.TaskView({ model: curTask });
                 this.$el.append(taskView.render().el);
             }, this);
             return this;
         },
     });
 
-    var tasksCollection = new TaskCollection();
+    var tasksCollection = new App.Collections.TaskCollection();
     tasksCollection.comparator = function(tasksCollection) {
         return -tasksCollection.get("priority");
     };
-    var tasksView = new TasksView({ collection: tasksCollection });
+    var tasksView = new App.Views.TasksView({ collection: tasksCollection });
 
     updateData();
 
@@ -105,7 +114,7 @@ $(document).ready(function() {
             alert("Text task is empty!");
             return false;
         }
-        var newTask     = new Task({
+        var newTask     = new App.Models.Task({
             textTask : newTextTask,
             priority : newPriority,
             dateStart:(function(){
@@ -113,12 +122,11 @@ $(document).ready(function() {
                 return selectDate.toString('yyyy-MM-dd');
             })()
         });
-        var taskView = new TaskView({model:newTask});
+        var taskView = new App.Views.TaskView({model:newTask});
         tasksCollection.url = BASEURL + "/?action=add";
         tasksCollection.create(newTask);
-        conn.send(msg);
+        Socket.Connects.send(this.msg);
         sortView("priority");
-
     });
 
     //Update data on client from server
@@ -146,14 +154,29 @@ $(document).ready(function() {
         tasksView.render();
     }
 //////////////////  WEBSOCKET /////////////////////////////////
-    var conn = new WebSocket('ws://panfilenkoi:8088');
-    var msg = "Need update data";
+    var Singleton = (function () {
+        var instance;
+        function createInstance() {
+            var object = new WebSocket('ws://panfilenkoi:8088');
+            return object;
+        }
+        return {
+            getInstance: function () {
+                if (!instance) {
+                    instance = createInstance();
+                }
+                return instance;
+            }
+        };
+    })();
 
-    conn.onopen = function(e) {
+    Socket.Connects = Singleton.getInstance();
+    Socket.Connects.msg = "send";
+    Socket.Connects.onopen = function(e) {
         console.log("Connection established!");
     };
 
-    conn.onmessage = function(e) {
+    Socket.Connects.onmessage = function(e) {
         console.log("Message add!");
         updateData(); //Update data on client from server
     };
@@ -189,14 +212,9 @@ $(document).ready(function() {
     $('#forDate').on('click',function(){
         var selectDate = Date.parse($("#datepicker").datepicker('getDate'));
         var selectDateStr = selectDate.toString('yyyy-MM-dd');
-        //Жесткая привязка к DOM
-        $('#target').find('tr').each(function(){
-           if ($(this).find('td').eq(2).text() != selectDateStr) {
-               $(this).hide();
-           } else {
-               $(this).show();
-           }
-        });
+        var dataCells = $('#target tr');
+        dataCells.find('td.date-cell:not(:contains("' + selectDateStr + '"))').parent().hide();
+        dataCells.find('td.date-cell:contains("' + selectDateStr + '")').parent().fadeIn();
     });
 
     //Datepicker
