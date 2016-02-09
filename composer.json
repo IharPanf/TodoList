@@ -10,7 +10,6 @@
     }
   ],
   "require": {
-    "cboden/Ratchet": "0.4.*",
     "cboden/ratchet": "0.4.x-dev"
   }
 }
