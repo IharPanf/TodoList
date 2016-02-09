@@ -27,6 +27,7 @@ class ConnectSocket implements MessageComponentInterface
                 $client->send($msg);
             }
         }
+        echo "Add new message!";
     }
 
     public function onClose(ConnectionInterface $conn) 

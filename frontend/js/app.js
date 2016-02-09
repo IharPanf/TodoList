@@ -3,7 +3,9 @@
  */
 
 $(document).ready(function() {
-	'use strict'
+
+    'use strict'
+/////////////////  BACKBONE ///////////////////////////////////
     var BASEURL = '../../backend/application';
     var Task = Backbone.Model.extend({
         defaults: {
@@ -49,6 +51,7 @@ $(document).ready(function() {
             this.model.destroy();
             e.stopPropagation();
             this.$el.remove();
+            conn.send(msg);
         },
         changeStatus:function(){
             switch (this.model.get('status')) {
@@ -67,6 +70,7 @@ $(document).ready(function() {
             }
             this.model.url = BASEURL + "/?action=update";
             this.model.save();
+            conn.send(msg);
         }
     });
 
@@ -90,17 +94,8 @@ $(document).ready(function() {
         return -tasksCollection.get("priority");
     };
     var tasksView = new TasksView({ collection: tasksCollection });
-    tasksCollection.fetch({
-        success: function() {
-            console.log('JSON load');
-            tasksView.render();
-        },
-        error : function() {
-            console.log('ERROR');
-        }
-    });
-    $(document.body).append(tasksView.render().el);
 
+    updateData();
 
     //Header of table
     $('#add').on('click',function(){        //add new task
@@ -122,17 +117,22 @@ $(document).ready(function() {
         tasksCollection.url = BASEURL + "/?action=add";
         tasksCollection.create(newTask);
         sortView("priority");
-    })
+        conn.send(msg);
+    });
 
-    $("#priority").on('click',function(){
-        sortView("priority");   // sorting for alphabet
-    });
-    $("#status").on('click',function(){
-        sortView("status");     // sorting for alphabet
-    });
-    $("#dateStart").on('click',function(){
-        sortView("dateStart"); // sorting for alphabet
-    });
+    //Update data on client from server
+    function updateData() {
+        tasksView.$el.find('tr').remove();
+        tasksCollection.fetch({
+            success: function() {
+                console.log('JSON load');
+                tasksView.render();
+            },
+            error : function() {
+                console.log('ERROR');
+            }
+        });
+    }
 
     //Sorting for header
     function sortView(paramSort){
@@ -143,6 +143,29 @@ $(document).ready(function() {
         tasksView.$el.find('tr').remove();
         tasksView.render();
     }
+//////////////////  WEBSOCKET /////////////////////////////////
+    var conn = new WebSocket('ws://panfilenkoi:8088');
+    var msg = "Need update data";
+
+    conn.onopen = function(e) {
+        console.log("Connection established!");
+    };
+
+    conn.onmessage = function(e) {
+        console.log("Message add!");
+        updateData(); //Update data on client from server
+    };
+
+////////////////// DOM ///////////////////////////////////////
+    $("#priority").on('click',function(){
+        sortView("priority");   // sorting for alphabet
+    });
+    $("#status").on('click',function(){
+        sortView("status");     // sorting for alphabet
+    });
+    $("#dateStart").on('click',function(){
+        sortView("dateStart"); // sorting for alphabet
+    });
 
     //Header template
     var templateHeader =  $('#title').html();
