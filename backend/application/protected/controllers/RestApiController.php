@@ -52,7 +52,7 @@ class RestApiController extends CController
 		$newTask 	= Todos::model()->findByPk($id);
 		if($newTask->delete() > 0)
 		{
-			$this->_sendResponse(200, 'Success: the model is deleted.');
+			$this->_sendResponse(204, 'Success: the model is deleted.');
 		}
 		else
 		{

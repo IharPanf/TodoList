@@ -60,29 +60,49 @@ $(document).ready(function() {
         remove: function(e){
             var idDelete = this.model.get('id');
             this.model.url = BASEURL + "/?action=destroy&id="+idDelete;
-            this.model.destroy();
-            Socket.Connects.send(this.msg);
+            this.model.destroy({
+                success : _.bind(function (model, response) {
+                    this.$el.remove();
+                    Socket.Connects.send(this.msg);
+                },this),
+                error: function (model, response) {
+                    console.log("Error: model not removed");
+                }
+            });
             e.stopPropagation();
-            this.$el.remove();
         },
         changeStatus:function(){
             switch (this.model.get('status')) {
                 case 'new':
                     this.model.set('status','archive');
-                    this.$el.addClass('warning');
                     break;
                 case 'archive':
                     this.model.set('status','done');
-                    this.$el.removeClass('warning').addClass('success');
                     break;
                 case 'done':
                     this.model.set('status','new');
-                    this.$el.removeClass('warning success');
                     break;
             }
             this.model.url = BASEURL + "/?action=update";
-            this.model.save();
-            Socket.Connects.send(this.msg);
+            this.model.save(null,{
+                success: _.bind(function (model, response) {
+                    switch (model.get('status')) {
+                        case 'new':
+                            this.$el.removeClass('warning success');
+                            break;
+                        case 'archive':
+                            this.$el.addClass('warning');
+                            break;
+                        case 'done':
+                            this.$el.removeClass('warning').addClass('success');
+                            break;
+                    }
+                    Socket.Connects.send(this.msg);
+                },this),
+                error: function (model, response) {
+                    console.log("Error: model not saved");
+                }
+            });
         }
     });
 
@@ -114,7 +134,7 @@ $(document).ready(function() {
         var newTextTask = $('#textTask').val();
         var newPriority = $('#priorityTask').val();
         if (newTextTask == '') {
-            alert("Text task is empty!");
+            alert("Text task empty!");
             return false;
         }
         var newTask     = new App.Models.Task({
@@ -125,19 +145,25 @@ $(document).ready(function() {
                 return selectDate.toString('yyyy-MM-dd');
             })()
         });
-        var taskView = new App.Views.TaskView({model:newTask});
+
         tasksCollection.url = BASEURL + "/?action=add";
-        tasksCollection.create(newTask);
-        Socket.Connects.send(this.msg);
+        tasksCollection.create(newTask,{
+            success : _.bind(function(model, response){
+                Socket.Connects.send(this.msg);
+            },this),
+            error: function (model, response) {
+                console.log("Error: model not created");
+            }
+        });
         sortView("priority");
     });
 
     //Update data on client from server
     function updateData() {
-        tasksView.$el.find('tr').remove();
         tasksCollection.url = BASEURL;
         tasksCollection.fetch({
             success: function() {
+                tasksView.$el.find('tr').remove();
                 console.log('JSON load');
                 tasksView.render();
             },
@@ -157,7 +183,7 @@ $(document).ready(function() {
         tasksView.render();
     }
 //////////////////  WEBSOCKET /////////////////////////////////
-    var Singleton = (function () {
+    var SocketSingleton = (function () {
         var instance;
         function createInstance() {
             var object = new WebSocket('ws://panfilenkoi:8088');
@@ -174,7 +200,7 @@ $(document).ready(function() {
     })();
 
     if (Socket.USEWEBSOCKET) {
-        Socket.Connects = Singleton.getInstance();
+        Socket.Connects = SocketSingleton.getInstance();
     }
 
     Socket.Connects.msg = "send";
