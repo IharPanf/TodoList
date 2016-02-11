@@ -14,19 +14,20 @@ $(document).ready(function () {
 
     window.Socket = {
         Connects: {},
-        USEWEBSOCKET: true
+        USEWEBSOCKET: false
     };
 
 /////////////////  BACKBONE ///////////////////////////////////
     var BASEURL = '../../backend/application';
     App.Models.Task = Backbone.Model.extend({
         defaults: {
-            status: 'new',
-            priority: 0,
-            dateStart: (function () {
+            status      : 'new',
+            priority    : 0,
+            dateStart   : (function () {
                 return Date.today().toString('yyyy-MM-dd');
             })(),
-            textTask: ''
+            textTask    : '',
+            lastAction  : 'none'
         }
     });
 
@@ -64,10 +65,15 @@ $(document).ready(function () {
                 success: _.bind(function (model, response) {
                     this.$el.remove();
                     Socket.Connects.send(this.msg);
+                    localStorage.removeItem('model'+this.model.get('id'));
+                    updateDateFromLocalstorage();
                 }, this),
-                error: function (model, response) {
+                error: _.bind(function (model, response) {
+                    this.$el.remove();
+                    model.set('lastAction','delete');
+                    localStorage.setItem('model' + model.get('id'), JSON.stringify(model));
                     console.log("Error: model not removed");
-                }
+                }, this)
             });
             e.stopPropagation();
         },
@@ -75,34 +81,30 @@ $(document).ready(function () {
             switch (this.model.get('status')) {
                 case 'new'    :
                     this.model.set('status', 'archive');
+                    this.$el.addClass('warning');
                     break;
                 case 'archive':
                     this.model.set('status', 'done');
+                    this.$el.removeClass('warning').addClass('success');
                     break;
                 case 'done'   :
                     this.model.set('status', 'new');
+                    this.$el.removeClass('warning success');
                     break;
             }
             this.model.url = BASEURL + "/?action=update";
             this.model.save(null, {
                 success: _.bind(function (model, response) {
-                    switch (model.get('status')) {
-                        case 'new'    :
-                            this.$el.removeClass('warning success');
-                            break;
-                        case 'archive':
-                            this.$el.addClass('warning');
-                            break;
-                        case 'done'   :
-                            this.$el.removeClass('warning').addClass('success');
-                            break;
-                    }
                     Socket.Connects.send(this.msg);
+                    updateDateFromLocalstorage();
                 }, this),
-                error: function (model, response) {
-                    console.log("Error: model not saved");
-                }
+                error: _.bind(function (model, response) {
+                    model.set('lastAction','save');
+                    localStorage.setItem('model' + model.get('id'), JSON.stringify(model));
+                    console.log("Model saved in localstorage");
+                }, this)
             });
+            localStorage.setItem('model'+this.model.get('id'), JSON.stringify(this.model));
         }
     });
 
@@ -145,30 +147,51 @@ $(document).ready(function () {
                 return selectDate.toString('yyyy-MM-dd');
             })()
         });
-
-        tasksCollection.url = BASEURL + "/?action=add";
-        tasksCollection.create(newTask, {
-            success: _.bind(function (model, response) {
-                Socket.Connects.send(this.msg);
-            }, this),
-            error: function (model, response) {
-                console.log("Error: model not created");
-            }
-        });
+        var newId =  +localStorage.getItem('maxElemId') + 1;
+        localStorage.setItem('maxElemId', newId);
+        createData(newTask,newId);
         sortView("priority");
+        localStorage.setItem('model' + newId, JSON.stringify(newTask));
     });
 
+    //Create new model
+    function createData(curModel, curId) {
+        tasksCollection.url = BASEURL + "/?action=add";
+        tasksCollection.create(curModel, {
+            success: _.bind(function (model, response) {
+                Socket.Connects.send('create');
+                updateDateFromLocalstorage();
+            }, this),
+            error: function (model, response) {
+                console.log(model.lastAction);
+                model.set('lastAction','create');
+                model.set('id',curId);
+                localStorage.setItem('model' + curId, JSON.stringify(model));
+                console.log("Model created in localstorage");
+            }
+        });
+    }
     //Update data on client from server
     function updateData() {
         tasksCollection.url = BASEURL;
         tasksCollection.fetch({
-            success: function () {
+            success: function (model, response) {
+                localStorage.clear();
                 tasksView.$el.find('tr').remove();
-                console.log('JSON load');
+                var arrModels = model.toJSON();
+                var maxElem   = 1;
+                //Insert all models from server in localstorage
+                for (var i = 0; i < arrModels.length; i++) {
+                        localStorage.setItem('model' + arrModels[i].id,JSON.stringify(arrModels[i]));
+                        if (maxElem < arrModels[i].id){
+                            maxElem = arrModels[i].id;
+                        }
+                }
+                localStorage.setItem('maxElemId',maxElem);
                 tasksView.render();
             },
-            error: function () {
-                console.log('ERROR');
+            error: function (model, response) {
+                console.log('ERROR: no connection with server');
             }
         });
     }
@@ -191,7 +214,6 @@ $(document).ready(function () {
             var object = new WebSocket('ws://panfilenkoi:8088');
             return object;
         }
-
         return {
             getInstance: function () {
                 if (!instance) {
@@ -221,7 +243,32 @@ $(document).ready(function () {
             console.log("Send message!");
         };
     }
-
+////////////////// LOCALSTORAGE ///////////////////////////////
+    function updateDateFromLocalstorage() {
+        var tempModel;
+        for (var model in localStorage) {
+            tempModel = JSON.parse(localStorage.getItem(model));
+            if (tempModel.lastAction == 'create') {
+                tempModel.lastAction = 'none';
+                localStorage.setItem('model' + tempModel.id, JSON.stringify(tempModel));
+                delete tempModel.id;
+                createData(tempModel);
+            }
+            if (tempModel.lastAction == 'delete') {
+                localStorage.removeItem('model' + tempModel.id);
+                var curModel = tasksCollection.get(tempModel.id);
+                curModel.url = BASEURL + "/?action=destroy&id=" + tempModel.id;
+                curModel.destroy();
+            }
+            if (tempModel.lastAction == 'save') {
+                tempModel.lastAction = 'none';
+                localStorage.setItem('model' + tempModel.id, JSON.stringify(tempModel));
+                var curModel = tasksCollection.get(tempModel.id);
+                curModel.url = BASEURL + "/?action=update";
+                curModel.save();
+            }
+        }
+    }
 ////////////////// DOM ///////////////////////////////////////
     $("#priority").on('click', function () {
         sortView("priority");   // sorting for alphabet
@@ -262,7 +309,7 @@ $(document).ready(function () {
     //Datepicker
     $.datepicker.setDefaults($.datepicker.regional["ru"]);
     $("#datepicker").datepicker();
-})
+});
 
 
 
