@@ -21,13 +21,13 @@ $(document).ready(function () {
     var BASEURL = '../../backend/application';
     App.Models.Task = Backbone.Model.extend({
         defaults: {
-            status      : 'new',
-            priority    : 0,
-            dateStart   : (function () {
+            status: 'new',
+            priority: 0,
+            dateStart: (function () {
                 return Date.today().toString('yyyy-MM-dd');
             })(),
-            textTask    : '',
-            lastAction  : 'none'
+            textTask: '',
+            lastAction: 'none'
         }
     });
 
@@ -65,13 +65,12 @@ $(document).ready(function () {
                 success: _.bind(function (model, response) {
                     this.$el.remove();
                     Socket.Connects.send(this.msg);
-                    localStorage.removeItem('model'+this.model.get('id'));
-                    updateDateFromLocalstorage();
+                    localStorage.removeItem('model' + this.model.get('id'));
+                    updateDataFromLocalstorage();
                 }, this),
                 error: _.bind(function (model, response) {
                     this.$el.remove();
-                    model.set('lastAction','delete');
-                    localStorage.setItem('model' + model.get('id'), JSON.stringify(model));
+                    insertDataInLocalStorage(model, 'destroy');
                     console.log("Error: model not removed");
                 }, this)
             });
@@ -96,15 +95,13 @@ $(document).ready(function () {
             this.model.save(null, {
                 success: _.bind(function (model, response) {
                     Socket.Connects.send(this.msg);
-                    updateDateFromLocalstorage();
+                    updateDataFromLocalstorage();
                 }, this),
                 error: _.bind(function (model, response) {
-                    model.set('lastAction','save');
-                    localStorage.setItem('model' + model.get('id'), JSON.stringify(model));
+                    insertDataInLocalStorage(model, 'save');
                     console.log("Model saved in localstorage");
                 }, this)
             });
-            localStorage.setItem('model'+this.model.get('id'), JSON.stringify(this.model));
         }
     });
 
@@ -147,47 +144,31 @@ $(document).ready(function () {
                 return selectDate.toString('yyyy-MM-dd');
             })()
         });
-        var newId =  +localStorage.getItem('maxElemId') + 1;
-        localStorage.setItem('maxElemId', newId);
-        createData(newTask,newId);
+        createData(newTask);
         sortView("priority");
-        localStorage.setItem('model' + newId, JSON.stringify(newTask));
     });
 
     //Create new model
-    function createData(curModel, curId) {
+    function createData(curModel) {
         tasksCollection.url = BASEURL + "/?action=add";
         tasksCollection.create(curModel, {
             success: _.bind(function (model, response) {
                 Socket.Connects.send('create');
-                updateDateFromLocalstorage();
+                updateDataFromLocalstorage();
             }, this),
             error: function (model, response) {
-                console.log(model.lastAction);
-                model.set('lastAction','create');
-                model.set('id',curId);
-                localStorage.setItem('model' + curId, JSON.stringify(model));
+                insertDataInLocalStorage(model, 'create');
                 console.log("Model created in localstorage");
             }
         });
     }
+
     //Update data on client from server
     function updateData() {
         tasksCollection.url = BASEURL;
         tasksCollection.fetch({
             success: function (model, response) {
-                localStorage.clear();
                 tasksView.$el.find('tr').remove();
-                var arrModels = model.toJSON();
-                var maxElem   = 1;
-                //Insert all models from server in localstorage
-                for (var i = 0; i < arrModels.length; i++) {
-                        localStorage.setItem('model' + arrModels[i].id,JSON.stringify(arrModels[i]));
-                        if (maxElem < arrModels[i].id){
-                            maxElem = arrModels[i].id;
-                        }
-                }
-                localStorage.setItem('maxElemId',maxElem);
                 tasksView.render();
             },
             error: function (model, response) {
@@ -214,6 +195,7 @@ $(document).ready(function () {
             var object = new WebSocket('ws://panfilenkoi:8088');
             return object;
         }
+
         return {
             getInstance: function () {
                 if (!instance) {
@@ -244,31 +226,48 @@ $(document).ready(function () {
         };
     }
 ////////////////// LOCALSTORAGE ///////////////////////////////
-    function updateDateFromLocalstorage() {
-        var tempModel;
+    function insertDataInLocalStorage(curModel, action) {
+        var timeMark = new Date().getTime();  //for unique
+        localStorage.setItem(timeMark + '%' + action, JSON.stringify(curModel))
+    }
+
+    function updateDataFromLocalstorage() {
+        var tempAction, curModel;
         for (var model in localStorage) {
-            tempModel = JSON.parse(localStorage.getItem(model));
-            if (tempModel.lastAction == 'create') {
-                tempModel.lastAction = 'none';
-                localStorage.setItem('model' + tempModel.id, JSON.stringify(tempModel));
-                delete tempModel.id;
-                createData(tempModel);
-            }
-            if (tempModel.lastAction == 'delete') {
-                localStorage.removeItem('model' + tempModel.id);
-                var curModel = tasksCollection.get(tempModel.id);
-                curModel.url = BASEURL + "/?action=destroy&id=" + tempModel.id;
-                curModel.destroy();
-            }
-            if (tempModel.lastAction == 'save') {
-                tempModel.lastAction = 'none';
-                localStorage.setItem('model' + tempModel.id, JSON.stringify(tempModel));
-                var curModel = tasksCollection.get(tempModel.id);
-                curModel.url = BASEURL + "/?action=update";
-                curModel.save();
+            tempAction = model.split('%')[1];
+            curModel = JSON.parse(localStorage.getItem(model));
+            switch (tempAction) {
+                case 'create' :
+                    tasksCollection.url = BASEURL + "/?action=add";
+                    tasksCollection.create(curModel, {
+                        success: _.bind(function () {
+                            Socket.Connects.send('create');
+                            localStorage.removeItem(model);
+                        }, this)
+                    });
+                    break;
+                case 'save'  :
+                    curModel.url = BASEURL + "/?action=update";
+                    curModel.save(null, {
+                        success: _.bind(function () {
+                            Socket.Connects.send(this.msg);
+                            localStorage.removeItem(model);
+                        }, this)
+                    });
+                    break;
+                case 'destroy' :
+                    var idDelete = curModel.get('id');
+                    curModel.url = BASEURL + "/?action=destroy&id=" + idDelete;
+                    curModel.destroy({
+                        success: _.bind(function (model, response) {
+                            Socket.Connects.send(this.msg);
+                            localStorage.removeItem('model' + this.model.get('id'));
+                        }, this)
+                    });
             }
         }
     }
+
 ////////////////// DOM ///////////////////////////////////////
     $("#priority").on('click', function () {
         sortView("priority");   // sorting for alphabet
@@ -285,7 +284,6 @@ $(document).ready(function () {
     $('.header').html(_.template('Simple Todo List'));
 
     //Filter for task
-
     $("#done").on('click', function () {
         $("#target tr").hide();
         $('.success').fadeIn();
