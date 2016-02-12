@@ -63,17 +63,16 @@ $(document).ready(function () {
             this.model.url = BASEURL + "/?action=destroy&id=" + idDelete;
             this.model.destroy({
                 success: _.bind(function (model, response) {
-                    this.$el.remove();
                     Socket.Connects.send(this.msg);
                     localStorage.removeItem('model' + this.model.get('id'));
                     updateDataFromLocalstorage();
                 }, this),
                 error: _.bind(function (model, response) {
-                    this.$el.remove();
                     insertDataInLocalStorage(model, 'destroy');
                     console.log("Error: model not removed");
                 }, this)
             });
+            this.$el.remove();
             e.stopPropagation();
         },
         changeStatus: function () {
@@ -232,7 +231,7 @@ $(document).ready(function () {
     }
 
     function updateDataFromLocalstorage() {
-        var tempAction, curModel;
+        var tempAction, curModel, modelInCollection;
         for (var model in localStorage) {
             tempAction = model.split('%')[1];
             curModel = JSON.parse(localStorage.getItem(model));
@@ -242,28 +241,34 @@ $(document).ready(function () {
                     tasksCollection.create(curModel, {
                         success: _.bind(function () {
                             Socket.Connects.send('create');
-                            localStorage.removeItem(model);
                         }, this)
                     });
+                    localStorage.removeItem(model);
                     break;
                 case 'save'  :
-                    curModel.url = BASEURL + "/?action=update";
-                    curModel.save(null, {
-                        success: _.bind(function () {
-                            Socket.Connects.send(this.msg);
-                            localStorage.removeItem(model);
-                        }, this)
-                    });
+                    modelInCollection = tasksCollection.get(curModel.id);
+                    if (modelInCollection) {
+                        modelInCollection.url = BASEURL + "/?action=update";
+                        modelInCollection.save(null, {
+                            success: _.bind(function () {
+                                Socket.Connects.send('save');
+                            }, this)
+                        });
+                    }
+                    localStorage.removeItem(model);
                     break;
                 case 'destroy' :
-                    var idDelete = curModel.get('id');
-                    curModel.url = BASEURL + "/?action=destroy&id=" + idDelete;
-                    curModel.destroy({
-                        success: _.bind(function (model, response) {
-                            Socket.Connects.send(this.msg);
-                            localStorage.removeItem('model' + this.model.get('id'));
-                        }, this)
-                    });
+                    var idDelete = curModel.id;
+                    modelInCollection = tasksCollection.get(curModel.id);
+                    if (modelInCollection) {
+                        modelInCollection.url = BASEURL + "/?action=destroy&id=" + idDelete;
+                        modelInCollection.destroy({
+                            success: _.bind(function (model, response) {
+                                Socket.Connects.send('delete');
+                            }, this)
+                        });
+                    }
+                    localStorage.removeItem(model);
             }
         }
     }
