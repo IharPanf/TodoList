@@ -18,7 +18,8 @@ $(document).ready(function () {
     };
 
 /////////////////  BACKBONE ///////////////////////////////////
-    var BASEURL = '../../backend/application';
+    //var BASEURL = '../../backend/application';
+    var BASEURL = '../../backend/node';
     App.Models.Task = Backbone.Model.extend({
         defaults: {
             status: 'new',
@@ -90,7 +91,7 @@ $(document).ready(function () {
                     this.$el.removeClass('warning success');
                     break;
             }
-            this.model.url = BASEURL + "/?action=update";
+            this.model.url = BASEURL + "/?action=update&id=" + this.model.get("id") + "&status=" + this.model.get("status");
             this.model.save(null, {
                 success: _.bind(function (model, response) {
                     Socket.Connects.send(this.msg);
