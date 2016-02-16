@@ -1,7 +1,7 @@
 /**
  * Created by i.panfilenko on 28.01.2016.
  */
-
+////////////////////////////////////////// OLD VERSION!! NOT SUPPORTED////////////////////////////////////////////////////////
 $(document).ready(function () {
 
     'use strict';
@@ -10,11 +10,6 @@ $(document).ready(function () {
         Models: {},
         Collections: {},
         Views: {}
-    };
-
-    window.Socket = {
-        Connects: {},
-        USEWEBSOCKET: false
     };
 
 /////////////////  BACKBONE ///////////////////////////////////
