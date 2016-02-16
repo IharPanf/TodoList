@@ -18,8 +18,8 @@ $(document).ready(function () {
     };
 
 /////////////////  BACKBONE ///////////////////////////////////
-    //var BASEURL = '../../backend/application';
-    var BASEURL = '../../backend/node';
+    // var BASEURL = '../../backend/application';
+    var BASEURL = 'http://panfilenkoi:8888/backend/node/';
     App.Models.Task = Backbone.Model.extend({
         defaults: {
             status: 'new',
@@ -61,7 +61,7 @@ $(document).ready(function () {
         },
         remove: function (e) {
             var idDelete = this.model.get('id');
-            this.model.url = BASEURL + "/?action=destroy&id=" + idDelete;
+            this.model.url = BASEURL + "?action=destroy&id=" + idDelete;
             this.model.destroy({
                 success: _.bind(function (model, response) {
                     Socket.Connects.send(this.msg);
@@ -91,7 +91,7 @@ $(document).ready(function () {
                     this.$el.removeClass('warning success');
                     break;
             }
-            this.model.url = BASEURL + "/?action=update&id=" + this.model.get("id") + "&status=" + this.model.get("status");
+            this.model.url = BASEURL + "?action=update&id=" + this.model.get("id") + "&status=" + this.model.get("status");
             this.model.save(null, {
                 success: _.bind(function (model, response) {
                     Socket.Connects.send(this.msg);
@@ -150,7 +150,10 @@ $(document).ready(function () {
 
     //Create new model
     function createData(curModel) {
-        tasksCollection.url = BASEURL + "/?action=add";
+        tasksCollection.url = BASEURL
+            + "?action=add&textTask=" + curModel.get('textTask')
+            + "&priority=" + curModel.get('priority')
+            + "&dateStart=" + curModel.get('dateStart');
         tasksCollection.create(curModel, {
             success: _.bind(function (model, response) {
                 Socket.Connects.send('create');
@@ -238,7 +241,10 @@ $(document).ready(function () {
             curModel = JSON.parse(localStorage.getItem(model));
             switch (tempAction) {
                 case 'create' :
-                    tasksCollection.url = BASEURL + "/?action=add";
+                    tasksCollection.url = BASEURL
+                        + "?action=add&textTask=" + curModel.get('textTask')
+                        + "&priority=" + curModel.get('priority')
+                        + "&dateStart=" + curModel.get('dateStart');
                     tasksCollection.create(curModel, {
                         success: _.bind(function () {
                             Socket.Connects.send('create');
@@ -249,7 +255,11 @@ $(document).ready(function () {
                 case 'save'  :
                     modelInCollection = tasksCollection.get(curModel.id);
                     if (modelInCollection) {
-                        modelInCollection.url = BASEURL + "/?action=update";
+                        modelInCollection.url = BASEURL
+                            + "?action=update&id="
+                            + modelInCollection.get("id")
+                            + "&status="
+                            + modelInCollection.get("status");
                         modelInCollection.save(null, {
                             success: _.bind(function () {
                                 Socket.Connects.send('save');
@@ -262,7 +272,7 @@ $(document).ready(function () {
                     var idDelete = curModel.id;
                     modelInCollection = tasksCollection.get(curModel.id);
                     if (modelInCollection) {
-                        modelInCollection.url = BASEURL + "/?action=destroy&id=" + idDelete;
+                        modelInCollection.url = BASEURL + "?action=destroy&id=" + idDelete;
                         modelInCollection.destroy({
                             success: _.bind(function (model, response) {
                                 Socket.Connects.send('delete');
