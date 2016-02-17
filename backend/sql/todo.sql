@@ -33,24 +33,8 @@ CREATE TABLE IF NOT EXISTS `todos` (
   `status` varchar(20) NOT NULL,
   `priority` int(5) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=58 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
---
--- Дамп данных таблицы `todos`
---
-
-INSERT INTO `todos` (`id`, `textTask`, `dateStart`, `status`, `priority`) VALUES
-(1, 'почитать о Backbone.js', '2016-01-29', 'new', 3),
-(2, 'подключить Underscore для использования шаблонов в BackBone', '2016-02-01', 'done', 2),
-(3, 'написать фронтенд для проекта', '2016-02-01', 'archive', 2),
-(4, 'прочитать о Yii', '2016-02-02', 'done', 2),
-(49, 'tttt', '2016-02-04', 'new', 1),
-(51, 'tttt3', '2016-02-04', 'new', 1),
-(53, 'ret', '2016-02-04', 'archive', 1),
-(54, 'uuu', '2016-02-04', 'new', 1),
-(55, 'test', '2016-02-04', 'done', 1),
-(56, 'test2', '2016-02-04', 'archive', 1),
-(57, 'test3', '2016-02-04', 'archive', 2);
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

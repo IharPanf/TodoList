@@ -57,10 +57,8 @@ define(['jquery', 'underscore', 'backbone', 'date', 'm_websocket'], function ($,
                 success: _.bind(function (model, response) {
                     Socket.Connects.send(this.msg);
                     localStorage.removeItem('model' + this.model.get('id'));
-                    updateDataFromLocalstorage();
                 }, this),
                 error: _.bind(function (model, response) {
-                    insertDataInLocalStorage(model, 'destroy');
                     console.log("Error: model not removed");
                 }, this)
             });
@@ -86,10 +84,8 @@ define(['jquery', 'underscore', 'backbone', 'date', 'm_websocket'], function ($,
             this.model.save(null, {
                 success: _.bind(function (model, response) {
                     Socket.Connects.send(this.msg);
-                    updateDataFromLocalstorage();
                 }, this),
                 error: _.bind(function (model, response) {
-                    insertDataInLocalStorage(model, 'save');
                     console.log("Model saved in localstorage");
                 }, this)
             });
@@ -111,11 +107,5 @@ define(['jquery', 'underscore', 'backbone', 'date', 'm_websocket'], function ($,
         }
     });
 
-    function insertDataInLocalStorage(curModel, action) {
-
-    }
-    function updateDataFromLocalstorage() {
-
-    }
     return App;
 });

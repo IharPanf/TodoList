@@ -6,7 +6,6 @@ require.config({
         "date": "date",
         "datepicker": "jquery-ui.datepicker.min",
         "datepicker_ru": "jquery-ui.datepicker.min_ru",
-        "app": "app"
     },
     shim: {
         'underscore': {
@@ -31,9 +30,55 @@ require.config({
 });
 
 
-require(["jquery", "underscore", "m_backbone", "datepicker", "datepicker_ru"], function ($, _, App) {
+require(["jquery", "underscore", "m_backbone", "datepicker_ru", "datepicker"], function ($, _, App) {
     $(document).ready(function () {
 
+////////////////// DOM ///////////////////////////////////////
+        //Header template
+        var templateHeader = $('#title').html();
+        $('.header').html(_.template('Simple Todo List'));
+
+        //Filter for task
+        $("#done").on('click', function () {
+            $("#target tr").hide();
+            $('.success').fadeIn();
+        });
+
+        $("#all").on('click', function () {
+            $("#target tr").fadeIn();
+        });
+
+        $("#new").on('click', function () {
+            $("#target tr").show();
+            $('.success').hide();
+            $('.warning').hide();
+        });
+
+        $("#priority").on('click', function () {
+            sortView("priority");   // sorting for alphabet
+        });
+
+        $("#status").on('click', function () {
+            sortView("status");     // sorting for alphabet
+        });
+
+        $("#dateStart").on('click', function () {
+            sortView("dateStart"); // sorting for alphabet
+        });
+
+        $('#forDate').on('click', function () {
+            var selectDate = Date.parse($("#datepicker").datepicker('getDate'));
+            var selectDateStr = selectDate.toString('yyyy-MM-dd');
+            var dataCells = $("#target tr");
+            dataCells.find('td.date-cell:not(:contains("' + selectDateStr + '"))').parent().hide();
+            dataCells.find('td.date-cell:contains("' + selectDateStr + '")').parent().fadeIn();
+        });
+
+        //Datepicker
+        $.datepicker.setDefaults($.datepicker.regional["ru"]);
+        $("#datepicker").datepicker();
+
+////////////// BACKBONE //////////////////////////////////////////////////////////
         var tasksCollection = new App.Collections.TaskCollection();
         tasksCollection.comparator = function (tasksCollection) {
             return -tasksCollection.get("priority");
@@ -71,10 +116,8 @@ require(["jquery", "underscore", "m_backbone", "datepicker", "datepicker_ru"], f
             tasksCollection.create(curModel, {
                 success: _.bind(function (model, response) {
                     Socket.Connects.send('create');
-                    updateDataFromLocalstorage();
                 }, this),
                 error: function (model, response) {
-                    insertDataInLocalStorage(model, 'create');
                     console.log("Model created in localstorage");
                 }
             });
@@ -103,28 +146,6 @@ require(["jquery", "underscore", "m_backbone", "datepicker", "datepicker_ru"], f
             tasksView.$el.find('tr').remove();
             tasksView.render();
         }
-
-        //Header template
-        var templateHeader = $('#title').html();
-        $('.header').html(_.template('Simple Todo List'));
-
-        //Filter for task
-        $("#done").on('click', function () {
-            $("#target tr").hide();
-            $('.success').fadeIn();
-        });
-        $("#all").on('click', function () {
-            $("#target tr").fadeIn();
-        });
-        $("#new").on('click', function () {
-            $("#target tr").show();
-            $('.success').hide();
-            $('.warning').hide();
-        });
-
-        //Datepicker
-        $.datepicker.setDefaults($.datepicker.regional["ru"]);
-        $("#datepicker").datepicker();
     })
 });
 
