@@ -1,9 +1,10 @@
 var mysql = require('mysql');
-var fs = require('fs');
-var path = require('path');
+var qs = require("querystring");
+var url = require("url");
 
-function show(response, request, action) {
-    var paramGet = parseAction(action);
+function show(response, request) {
+    var query = url.parse(request.url).query,
+        params = qs.parse(query);
 
     var con = mysql.createConnection({
         host: "localhost",
@@ -19,7 +20,7 @@ function show(response, request, action) {
         }
         console.log('Connection established');
     });
-    switch (paramGet['action']) {
+    switch (params.action) {
         case undefined:
             con.query(
                 "SELECT * FROM todos",
@@ -32,7 +33,7 @@ function show(response, request, action) {
             break;
         case 'destroy':
             con.query(
-                "DELETE FROM todos WHERE id =" + paramGet['id'],
+                "DELETE FROM todos WHERE id =" + params.id,
                 function (error, result, fields) {
                 }
             );
@@ -41,7 +42,7 @@ function show(response, request, action) {
             break;
         case 'update':
             con.query(
-                "UPDATE `todos` SET `status`='" + paramGet['status'] + "' WHERE `id`=" + paramGet['id'],
+                "UPDATE `todos` SET `status`='" + params.status + "' WHERE `id`=" + params.id,
                 function (error, result, fields) {
                 }
             );
@@ -52,32 +53,16 @@ function show(response, request, action) {
 
             con.query(
                 "INSERT INTO `todos` (`textTask`,`dateStart`,`status`,`priority`) VALUE("
-                + "'" + paramGet['textTask'] + "',"
-                + "'" + paramGet['dateStart'] + "',"
+                + "'" + params.textTask + "',"
+                + "'" + params.dateStart + "',"
                 + "'new',"
-                + paramGet['priority']
+                + params.priority
                 + ") ",
                 function (error, result, fields) {
                 }
             );
             break;
     }
-}
-
-function parseAction(path) {
-    var arrayGet = {};
-    if (path.indexOf('?') < 0) {  //no get params
-        return arrayGet;
-    }
-    var path = path.split('?');
-    path = path[1].split('&');     //take only get params
-    var param;
-
-    for (var i = 0, n = path.length; i < n; i++) {
-        param = path[i].split('=');
-        arrayGet[param[0]] = param[1];
-    }
-    return arrayGet;
 }
 
 exports.show = show;
