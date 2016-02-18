@@ -2,7 +2,7 @@
  * Created by i.panfilenko on 16.02.2016.
  */
 
-define(['jquery', 'underscore', 'backbone', 'date', 'm_websocket'], function ($, _, Backbone, Date, Socket) {
+define(['jquery', 'underscore', 'backbone', 'date', 'm_websocket','m_localstorage'], function ($, _, Backbone, Date, Socket, LS) {
     var App = {
         Models: {},
         Collections: {},
@@ -57,8 +57,10 @@ define(['jquery', 'underscore', 'backbone', 'date', 'm_websocket'], function ($,
                 success: _.bind(function (model, response) {
                     Socket.Connects.send(this.msg);
                     localStorage.removeItem('model' + this.model.get('id'));
+                    LS.updateData();
                 }, this),
                 error: _.bind(function (model, response) {
+                    LS.insertData(model,'destroy');
                     console.log("Error: model not removed");
                 }, this)
             });
@@ -84,9 +86,12 @@ define(['jquery', 'underscore', 'backbone', 'date', 'm_websocket'], function ($,
             this.model.save(null, {
                 success: _.bind(function (model, response) {
                     Socket.Connects.send(this.msg);
+                    console.log("save model on server");
+                    LS.updateData();
                 }, this),
                 error: _.bind(function (model, response) {
                     console.log("Model saved in localstorage");
+                    LS.insertData(model,'save');
                 }, this)
             });
         }

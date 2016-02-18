@@ -37,7 +37,6 @@ define([], function () {
 
     Socket.Connects.onmessage = function (e) {
         console.log("Message add!");
-        updateData(); //Update data on client from server
     };
 
     if (!("send" in Socket.Connects)) {

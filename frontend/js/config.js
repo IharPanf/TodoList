@@ -5,7 +5,7 @@ require.config({
         underscore: 'underscore',
         "date": "date",
         "datepicker": "jquery-ui.datepicker.min",
-        "datepicker_ru": "jquery-ui.datepicker.min_ru",
+        "datepicker_ru": "jquery-ui.datepicker.min_ru"
     },
     shim: {
         'underscore': {
@@ -20,7 +20,7 @@ require.config({
             exports: 'datepicker'
         },
         'datepicker_ru': {
-            deps: ['jquery'],
+            deps: ['jquery','datepicker'],
             exports: 'datepicker_ru'
         },
         'date': {
@@ -30,10 +30,146 @@ require.config({
 });
 
 
-require(["jquery", "underscore", "m_backbone", "datepicker_ru", "datepicker"], function ($, _, App) {
+require(["jquery", "underscore", "m_backbone", "m_localstorage","m_websocket", "datepicker", "datepicker_ru"], function ($, _, App, LS, Socket) {
     $(document).ready(function () {
+////////////////// LOCALSTORAGE //////////////////////////////
+        LS.updateData = function () {
+            var tempAction, curModel, modelInCollection;
+            for (var model in localStorage) {
+                tempAction = model.split('%')[1];
+                curModel = JSON.parse(localStorage.getItem(model));
+                switch (tempAction) {
+                    case 'create' :
+                        console.log('create');
+                        console.log(curModel);
+                        tasksCollection.url = App.BASEURL
+                            + "?action=add&textTask=" + curModel.textTask
+                            + "&priority=" + curModel.priority
+                            + "&dateStart=" + curModel.dateStart;
+                        tasksCollection.create(curModel, {
+                            success: _.bind(function () {
+                                Socket.Connects.send('create');
+                            }, this)
+                        });
+                        localStorage.removeItem(model);
+                        break;
+                    case 'save'  :
+                        console.log('save');
+                        modelInCollection = tasksCollection.get(curModel.id);
+                        if (modelInCollection) {
+                            modelInCollection.url = App.BASEURL
+                                + "?action=update&id="
+                                + modelInCollection.get("id")
+                                + "&status="
+                                + modelInCollection.get("status");
+                            modelInCollection.save(null, {
+                                success: _.bind(function () {
+                                    Socket.Connects.send('save');
+                                }, this)
+                            });
+                        }
+                        localStorage.removeItem(model);
+                        break;
+                    case 'destroy' :
+                        console.log('destroy');
+                        var idDelete = curModel.id;
+                        modelInCollection = tasksCollection.get(curModel.id);
+                        if (modelInCollection) {
+                            modelInCollection.url = App.BASEURL + "?action=destroy&id=" + idDelete;
+                            modelInCollection.destroy({
+                                success: _.bind(function (model, response) {
+                                    Socket.Connects.send('delete');
+                                }, this)
+                            });
+                        }
+                        localStorage.removeItem(model);
+                }
+            }
+        };
+////////////// BACKBONE //////////////////////////////////////////////////////////
+        var tasksCollection = new App.Collections.TaskCollection();
+        var tasksView = new App.Views.TasksView({collection: tasksCollection});
+
+        tasksCollection.comparator = function (tasksCollection) {
+            return -tasksCollection.get("priority");
+        };
+
+        tasksCollection.updateData = function () {
+            this.url = App.BASEURL;
+            this.fetch({
+                success: _.bind(function (model, response) {
+                    tasksView.$el.find('tr').remove();
+                    tasksView.render();
+                }, this),
+                error: function (model, response) {
+                    console.log('ERROR: no connection with server');
+                }
+            });
+        };
+
+        tasksCollection.sortView = function (paramSort) {
+            this.comparator = function () {
+                return this.get(paramSort);
+            };
+            tasksCollection.sort();
+            tasksView.$el.find('tr').remove();
+            tasksView.render();
+        };
+
+        tasksCollection.createData = function (curModel) {
+            this.url = App.BASEURL
+                + "?action=add&textTask=" + curModel.get('textTask')
+                + "&priority=" + curModel.get('priority')
+                + "&dateStart=" + curModel.get('dateStart');
+            this.create(curModel, {
+                success: _.bind(function (model, response) {
+                    console.log('create data');
+                    Socket.Connects.send('create');
+                    LS.updateData();
+                }, this),
+                error: function (model, response) {
+                    console.log("Model created in localstorage");
+                    LS.insertData(model, 'create');
+                }
+            });
+        };
+
+        tasksCollection.updateData();
+
+        //Header of table
+        $('#add').on('click', function () {        //add new task
+            console.log('click add');
+            var newTextTask = $('#textTask').val();
+            var newPriority = $('#priorityTask').val();
+            if (newTextTask == '') {
+                alert("Text task empty!");
+                return false;
+            }
+            var newTask = new App.Models.Task({
+                textTask: newTextTask,
+                priority: newPriority,
+                dateStart: (function () {
+                    var selectDate = Date.parse($("#datepicker").datepicker('getDate'));
+                    return selectDate.toString('yyyy-MM-dd');
+                })()
+            });
+            tasksCollection.createData(newTask);
+            tasksCollection.sortView("priority");
+        });
 
 ////////////////// DOM ///////////////////////////////////////
+        $("#priority").on('click', function () {
+            tasksCollection.sortView("priority");   // sorting for alphabet
+        });
+
+        $("#status").on('click', function () {
+            tasksCollection.sortView("status");     // sorting for alphabet
+        });
+
+        $("#dateStart").on('click', function () {
+            tasksCollection.sortView("dateStart"); // sorting for alphabet
+        });
+
         //Header template
         var templateHeader = $('#title').html();
         $('.header').html(_.template('Simple Todo List'));
@@ -54,18 +190,6 @@ require(["jquery", "underscore", "m_backbone", "datepicker_ru", "datepicker"], f
             $('.warning').hide();
         });
 
-        $("#priority").on('click', function () {
-            sortView("priority");   // sorting for alphabet
-        });
-
-        $("#status").on('click', function () {
-            sortView("status");     // sorting for alphabet
-        });
-
-        $("#dateStart").on('click', function () {
-            sortView("dateStart"); // sorting for alphabet
-        });
-
         $('#forDate').on('click', function () {
             var selectDate = Date.parse($("#datepicker").datepicker('getDate'));
             var selectDateStr = selectDate.toString('yyyy-MM-dd');
@@ -77,75 +201,6 @@ require(["jquery", "underscore", "m_backbone", "datepicker_ru", "datepicker"], f
         //Datepicker
         $.datepicker.setDefaults($.datepicker.regional["ru"]);
         $("#datepicker").datepicker();
-
-////////////// BACKBONE //////////////////////////////////////////////////////////
-        var tasksCollection = new App.Collections.TaskCollection();
-        tasksCollection.comparator = function (tasksCollection) {
-            return -tasksCollection.get("priority");
-        };
-        var tasksView = new App.Views.TasksView({collection: tasksCollection});
-
-        updateData();
-
-        //Header of table
-        $('#add').on('click', function () {        //add new task
-            var newTextTask = $('#textTask').val();
-            var newPriority = $('#priorityTask').val();
-            if (newTextTask == '') {
-                alert("Text task empty!");
-                return false;
-            }
-            var newTask = new App.Models.Task({
-                textTask: newTextTask,
-                priority: newPriority,
-                dateStart: (function () {
-                    var selectDate = Date.parse($("#datepicker").datepicker('getDate'));
-                    return selectDate.toString('yyyy-MM-dd');
-                })()
-            });
-            createData(newTask);
-            sortView("priority");
-        });
-
-        //Create new model
-        function createData(curModel) {
-            tasksCollection.url = App.BASEURL
-                + "?action=add&textTask=" + curModel.get('textTask')
-                + "&priority=" + curModel.get('priority')
-                + "&dateStart=" + curModel.get('dateStart');
-            tasksCollection.create(curModel, {
-                success: _.bind(function (model, response) {
-                    Socket.Connects.send('create');
-                }, this),
-                error: function (model, response) {
-                    console.log("Model created in localstorage");
-                }
-            });
-        }
-
-        //Update data on client from server
-        function updateData() {
-            tasksCollection.url = App.BASEURL;
-            tasksCollection.fetch({
-                success: function (model, response) {
-                    tasksView.$el.find('tr').remove();
-                    tasksView.render();
-                },
-                error: function (model, response) {
-                    console.log('ERROR: no connection with server');
-                }
-            });
-        }
-
-        //Sorting for header
-        function sortView(paramSort) {
-            tasksCollection.comparator = function (tasksCollection) {
-                return tasksCollection.get(paramSort);
-            };
-            tasksCollection.sort();
-            tasksView.$el.find('tr').remove();
-            tasksView.render();
-        }
     })
 });
 

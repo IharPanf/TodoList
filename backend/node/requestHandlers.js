@@ -3,9 +3,13 @@ var qs = require("querystring");
 var url = require("url");
 
 function show(response, request) {
+    if(request.url === '/favicon.ico') {
+        response.writeHead(404);
+        response.end();
+    };
     var query = url.parse(request.url).query,
         params = qs.parse(query);
-
+    console.log(query);
     var con = mysql.createConnection({
         host: "localhost",
         user: "root",
@@ -32,6 +36,7 @@ function show(response, request) {
             );
             break;
         case 'destroy':
+            console.log('destroy');
             con.query(
                 "DELETE FROM todos WHERE id =" + params.id,
                 function (error, result, fields) {
@@ -41,16 +46,18 @@ function show(response, request) {
             response.end();
             break;
         case 'update':
+            console.log('update');
             con.query(
                 "UPDATE `todos` SET `status`='" + params.status + "' WHERE `id`=" + params.id,
                 function (error, result, fields) {
+                    response.writeHead(200, {"Content-Type": "text/plain"});
+                    response.write(JSON.stringify(result));
+                    response.end();
                 }
             );
-            response.writeHead(200, {"Content-Type": "text/plain"});
-            response.end();
             break;
         case 'add':
-
+            console.log('add');
             con.query(
                 "INSERT INTO `todos` (`textTask`,`dateStart`,`status`,`priority`) VALUE("
                 + "'" + params.textTask + "',"
@@ -59,6 +66,9 @@ function show(response, request) {
                 + params.priority
                 + ") ",
                 function (error, result, fields) {
+                    response.writeHead(200, {"Content-Type": "text/plain"});
+                    response.write(JSON.stringify(result));
+                    response.end();
                 }
             );
             break;
