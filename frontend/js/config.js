@@ -117,16 +117,17 @@ require(["jquery", "underscore", "m_backbone", "m_localstorage","m_websocket", "
         };
 
         tasksCollection.createData = function (curModel) {
-            this.url = App.BASEURL
+            tasksCollection.url = App.BASEURL
                 + "?action=add&textTask=" + curModel.get('textTask')
                 + "&priority=" + curModel.get('priority')
                 + "&dateStart=" + curModel.get('dateStart');
-            this.create(curModel, {
-                success: _.bind(function (model, response) {
+            tasksCollection.create(curModel, {
+                success: function (model, response) {
                     console.log('create data');
+                    console.log(response);
                     Socket.Connects.send('create');
                     LS.updateData();
-                }, this),
+                },
                 error: function (model, response) {
                     console.log("Model created in localstorage");
                     LS.insertData(model, 'create');
@@ -137,7 +138,7 @@ require(["jquery", "underscore", "m_backbone", "m_localstorage","m_websocket", "
         tasksCollection.updateData();
 
         //Header of table
-        $('#add').on('click', function () {        //add new task
+        $('#add').on('click', function (e) {        //add new task
             console.log('click add');
             var newTextTask = $('#textTask').val();
             var newPriority = $('#priorityTask').val();
@@ -155,6 +156,7 @@ require(["jquery", "underscore", "m_backbone", "m_localstorage","m_websocket", "
             });
             tasksCollection.createData(newTask);
             tasksCollection.sortView("priority");
+            return false;
         });
 
 ////////////////// DOM ///////////////////////////////////////

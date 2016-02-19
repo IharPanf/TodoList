@@ -18,8 +18,7 @@ define(['jquery', 'underscore', 'backbone', 'date', 'm_websocket','m_localstorag
             dateStart: (function () {
                 return Date.today().toString('yyyy-MM-dd');
             })(),
-            textTask: '',
-            lastAction: 'none'
+            textTask: ''
         }
     });
 

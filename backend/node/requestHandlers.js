@@ -1,15 +1,17 @@
 var mysql = require('mysql');
 var qs = require("querystring");
 var url = require("url");
-
+var gFlag = '';
 function show(response, request) {
-    if(request.url === '/favicon.ico') {
+    if (request.url === '/favicon.ico') {
         response.writeHead(404);
         response.end();
-    };
+    }
+    ;
+
     var query = url.parse(request.url).query,
         params = qs.parse(query);
-    console.log(query);
+
     var con = mysql.createConnection({
         host: "localhost",
         user: "root",
@@ -42,7 +44,7 @@ function show(response, request) {
                 function (error, result, fields) {
                 }
             );
-            response.writeHead(204, {"Content-Type": "text/plain"});
+            response.writeHead(204, {"Content-Type": "application/json"});
             response.end();
             break;
         case 'update':
@@ -50,27 +52,30 @@ function show(response, request) {
             con.query(
                 "UPDATE `todos` SET `status`='" + params.status + "' WHERE `id`=" + params.id,
                 function (error, result, fields) {
-                    response.writeHead(200, {"Content-Type": "text/plain"});
+                    response.writeHead(200, {"Content-Type": "application/json"});
                     response.write(JSON.stringify(result));
                     response.end();
                 }
             );
             break;
         case 'add':
-            console.log('add');
-            con.query(
-                "INSERT INTO `todos` (`textTask`,`dateStart`,`status`,`priority`) VALUE("
-                + "'" + params.textTask + "',"
-                + "'" + params.dateStart + "',"
-                + "'new',"
-                + params.priority
-                + ") ",
-                function (error, result, fields) {
-                    response.writeHead(200, {"Content-Type": "text/plain"});
-                    response.write(JSON.stringify(result));
-                    response.end();
-                }
-            );
+            if (query !== gFlag) {
+                console.log('add');
+                con.query(
+                    "INSERT INTO `todos` (`textTask`,`dateStart`,`status`,`priority`) VALUE("
+                    + "'" + params.textTask + "',"
+                    + "'" + params.dateStart + "',"
+                    + "'new',"
+                    + params.priority
+                    + ") ",
+                    function (error, result, fields) {
+                        response.writeHead(200, {"Content-Type": "application/json"});
+                        response.write(JSON.stringify(result));
+                        response.end();
+                    }
+                );
+                gFlag = query;
+            }
             break;
     }
 }
