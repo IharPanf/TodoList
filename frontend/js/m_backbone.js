@@ -8,9 +8,9 @@ define(['jquery', 'underscore', 'backbone', 'date', 'm_websocket', 'm_localstora
         Collections: {},
         Views: {},
         BASEURL: 'http://panfilenkoi:8888/backend/node/'
+        // BASEURL = '../../backend/application'; //for Yii
     };
 
-// var BASEURL = '../../backend/application';
     App.Models.Task = Backbone.Model.extend({
         defaults: {
             status: 'new',
@@ -25,7 +25,23 @@ define(['jquery', 'underscore', 'backbone', 'date', 'm_websocket', 'm_localstora
     App.Collections.TaskCollection = Backbone.Collection.extend({
         model: App.Models.Task,
         url: App.BASEURL,
-        comparator: 'priority'
+        comparator: 'priority',
+        createData: function (newModel) {
+            this.url = App.BASEURL
+                + "?action=add&textTask=" + newModel.get('textTask')
+                + "&priority=" + newModel.get('priority')
+                + "&dateStart=" + newModel.get('dateStart');
+            this.create(newModel, {
+                success: function (model, response) {
+                    Socket.Connects.send('create');
+                    LS.updateData();
+                },
+                error: function (model, response) {
+                    console.log("Model created in localstorage");
+                    LS.insertData(model, 'create');
+                }
+            });
+        }
     });
 
 // The View for a Task (one)
@@ -102,16 +118,18 @@ define(['jquery', 'underscore', 'backbone', 'date', 'm_websocket', 'm_localstora
         initialize: function () {
             this.$el = $('#target');
             this.collection.fetch({
-                success: _.bind(function(){
-                    this.render();
-                },this),
-                error:function(){
+                success: _.bind(function () {
+                    //    this.render();
+                }, this),
+                error: function () {
                     console.log('ERROR: no connect with server!');
                 }
             });
+            this.collection.bind("sort", this.render, this);
         },
         render: function () {
-            this.$el.find('tr').remove();
+            console.log('render');
+            this.$el.empty();
             this.collection.each(function (curTask) {
                 var taskView = new App.Views.TaskView({model: curTask});
                 this.$el.append(taskView.render().el);

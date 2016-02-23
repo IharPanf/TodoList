@@ -90,32 +90,6 @@ require(["jquery", "underscore", "m_backbone", "m_localstorage","m_websocket", "
         var tasksCollection = new App.Collections.TaskCollection();
         var tasksView = new App.Views.TasksView({collection: tasksCollection});
 
-        tasksCollection.sortView = function (paramSort) {
-            this.comparator = function () {
-                return this.get(paramSort);
-            };
-            tasksCollection.sort();
-            tasksView.$el.find('tr').remove();
-            tasksView.render();
-        };
-
-        tasksCollection.createData = function (curModel) {
-            tasksCollection.url = App.BASEURL
-                + "?action=add&textTask=" + curModel.get('textTask')
-                + "&priority=" + curModel.get('priority')
-                + "&dateStart=" + curModel.get('dateStart');
-            tasksCollection.create(curModel, {
-                success: function (model, response) {
-                    Socket.Connects.send('create');
-                    LS.updateData();
-                },
-                error: function (model, response) {
-                    console.log("Model created in localstorage");
-                    LS.insertData(model, 'create');
-                }
-            });
-        };
-
         //Header of table
         $('#add').on('click', function (e) {        //add new task
             console.log('click add');
@@ -134,21 +108,23 @@ require(["jquery", "underscore", "m_backbone", "m_localstorage","m_websocket", "
                 })()
             });
             tasksCollection.createData(newTask);
-            tasksCollection.sortView("priority");
             return false;
         });
 
 ////////////////// DOM ///////////////////////////////////////
         $("#priority").on('click', function () {
-            tasksCollection.sortView("priority");   // sorting for alphabet
+            tasksCollection.comparator = 'priority';
+            tasksCollection.sort();                     // sorting for alphabet
         });
 
         $("#status").on('click', function () {
-            tasksCollection.sortView("status");     // sorting for alphabet
+            tasksCollection.comparator = 'status';
+            tasksCollection.sort();                     // sorting for alphabet
         });
 
         $("#dateStart").on('click', function () {
-            tasksCollection.sortView("dateStart"); // sorting for alphabet
+            tasksCollection.comparator = 'dateStart';
+            tasksCollection.sort();                     // sorting for alphabet
         });
 
         //Header template
