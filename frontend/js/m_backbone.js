@@ -2,7 +2,7 @@
  * Created by i.panfilenko on 16.02.2016.
  */
 
-define(['jquery', 'underscore', 'backbone', 'date', 'm_websocket','m_localstorage'], function ($, _, Backbone, Date, Socket, LS) {
+define(['jquery', 'underscore', 'backbone', 'date', 'm_websocket', 'm_localstorage'], function ($, _, Backbone, Date, Socket, LS) {
     var App = {
         Models: {},
         Collections: {},
@@ -59,7 +59,7 @@ define(['jquery', 'underscore', 'backbone', 'date', 'm_websocket','m_localstorag
                     LS.updateData();
                 }, this),
                 error: _.bind(function (model, response) {
-                    LS.insertData(model,'destroy');
+                    LS.insertData(model, 'destroy');
                     console.log("Error: model not removed");
                 }, this)
             });
@@ -90,7 +90,7 @@ define(['jquery', 'underscore', 'backbone', 'date', 'm_websocket','m_localstorag
                 }, this),
                 error: _.bind(function (model, response) {
                     console.log("Model saved in localstorage");
-                    LS.insertData(model,'save');
+                    LS.insertData(model, 'save');
                 }, this)
             });
         }
@@ -101,8 +101,17 @@ define(['jquery', 'underscore', 'backbone', 'date', 'm_websocket','m_localstorag
         tagName: 'tbody',
         initialize: function () {
             this.$el = $('#target');
+            this.collection.fetch({
+                success: _.bind(function(){
+                    this.render();
+                },this),
+                error:function(){
+                    console.log('ERROR: no connect with server!');
+                }
+            });
         },
         render: function () {
+            this.$el.find('tr').remove();
             this.collection.each(function (curTask) {
                 var taskView = new App.Views.TaskView({model: curTask});
                 this.$el.append(taskView.render().el);

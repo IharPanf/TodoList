@@ -90,23 +90,6 @@ require(["jquery", "underscore", "m_backbone", "m_localstorage","m_websocket", "
         var tasksCollection = new App.Collections.TaskCollection();
         var tasksView = new App.Views.TasksView({collection: tasksCollection});
 
-        tasksCollection.comparator = function (tasksCollection) {
-            return -tasksCollection.get("priority");
-        };
-
-        tasksCollection.updateData = function () {
-            this.url = App.BASEURL;
-            this.fetch({
-                success: _.bind(function (model, response) {
-                    tasksView.$el.find('tr').remove();
-                    tasksView.render();
-                }, this),
-                error: function (model, response) {
-                    console.log('ERROR: no connection with server');
-                }
-            });
-        };
-
         tasksCollection.sortView = function (paramSort) {
             this.comparator = function () {
                 return this.get(paramSort);
@@ -123,8 +106,6 @@ require(["jquery", "underscore", "m_backbone", "m_localstorage","m_websocket", "
                 + "&dateStart=" + curModel.get('dateStart');
             tasksCollection.create(curModel, {
                 success: function (model, response) {
-                    console.log('create data');
-                    console.log(response);
                     Socket.Connects.send('create');
                     LS.updateData();
                 },
@@ -134,8 +115,6 @@ require(["jquery", "underscore", "m_backbone", "m_localstorage","m_websocket", "
                 }
             });
         };
-
-        tasksCollection.updateData();
 
         //Header of table
         $('#add').on('click', function (e) {        //add new task
