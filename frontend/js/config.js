@@ -20,7 +20,7 @@ require.config({
             exports: 'datepicker'
         },
         'datepicker_ru': {
-            deps: ['jquery','datepicker'],
+            deps: ['jquery', 'datepicker'],
             exports: 'datepicker_ru'
         },
         'date': {
@@ -30,8 +30,30 @@ require.config({
 });
 
 
-require(["jquery", "underscore", "m_backbone", "m_localstorage","m_websocket", "datepicker", "datepicker_ru"], function ($, _, App, LS, Socket) {
+require(["jquery", "underscore", "m_backbone", "m_localstorage", "m_websocket", "datepicker", "datepicker_ru"], function ($, _, App, LS, Socket) {
     $(document).ready(function () {
+////////////// BACKBONE //////////////////////////////////////////////////////////
+        var tasksCollection = new App.Collections.TaskCollection();
+        var tasksView = new App.Views.TasksView({collection: tasksCollection});
+
+        //Header of table
+        $('#add').on('click', function (e) {        //add new task
+            var newTextTask = $('#textTask').val();
+            var newPriority = $('#priorityTask').val();
+            if (newTextTask == '') {
+                alert("Text task empty!");
+                return false;
+            }
+            var newTask = new App.Models.Task({
+                textTask: newTextTask,
+                priority: newPriority,
+                dateStart: (function () {
+                    var selectDate = Date.parse($("#datepicker").datepicker('getDate'));
+                    return selectDate.toString('yyyy-MM-dd');
+                })()
+            });
+            tasksCollection.createData(newTask);
+        });
 ////////////////// LOCALSTORAGE //////////////////////////////
         LS.updateData = function () {
             var tempAction, curModel, modelInCollection;
@@ -40,18 +62,14 @@ require(["jquery", "underscore", "m_backbone", "m_localstorage","m_websocket", "
                 curModel = JSON.parse(localStorage.getItem(model));
                 switch (tempAction) {
                     case 'create' :
-                        console.log('create');
-                        console.log(curModel);
-                        tasksCollection.url = App.BASEURL
-                            + "?action=add&textTask=" + curModel.textTask
-                            + "&priority=" + curModel.priority
-                            + "&dateStart=" + curModel.dateStart;
-                        tasksCollection.create(curModel, {
-                            success: _.bind(function () {
-                                Socket.Connects.send('create');
-                            }, this)
-                        });
                         localStorage.removeItem(model);
+                        var newTask = new App.Models.Task({
+                            textTask: curModel.textTask,
+                            priority: curModel.priority,
+                            dateStart: curModel.dateStart,
+                            status: 'local'
+                        });
+                        tasksCollection.createData(newTask);
                         break;
                     case 'save'  :
                         console.log('save');
@@ -72,6 +90,7 @@ require(["jquery", "underscore", "m_backbone", "m_localstorage","m_websocket", "
                         break;
                     case 'destroy' :
                         console.log('destroy');
+                        localStorage.removeItem(model);
                         var idDelete = curModel.id;
                         modelInCollection = tasksCollection.get(curModel.id);
                         if (modelInCollection) {
@@ -82,35 +101,9 @@ require(["jquery", "underscore", "m_backbone", "m_localstorage","m_websocket", "
                                 }, this)
                             });
                         }
-                        localStorage.removeItem(model);
                 }
             }
         };
-////////////// BACKBONE //////////////////////////////////////////////////////////
-        var tasksCollection = new App.Collections.TaskCollection();
-        var tasksView = new App.Views.TasksView({collection: tasksCollection});
-
-        //Header of table
-        $('#add').on('click', function (e) {        //add new task
-            console.log('click add');
-            var newTextTask = $('#textTask').val();
-            var newPriority = $('#priorityTask').val();
-            if (newTextTask == '') {
-                alert("Text task empty!");
-                return false;
-            }
-            var newTask = new App.Models.Task({
-                textTask: newTextTask,
-                priority: newPriority,
-                dateStart: (function () {
-                    var selectDate = Date.parse($("#datepicker").datepicker('getDate'));
-                    return selectDate.toString('yyyy-MM-dd');
-                })()
-            });
-            tasksCollection.createData(newTask);
-            return false;
-        });
-
 ////////////////// DOM ///////////////////////////////////////
         $("#priority").on('click', function () {
             tasksCollection.comparator = 'priority';

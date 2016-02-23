@@ -128,11 +128,12 @@ define(['jquery', 'underscore', 'backbone', 'date', 'm_websocket', 'm_localstora
             this.collection.bind("sort", this.render, this);
         },
         render: function () {
-            console.log('render');
             this.$el.empty();
             this.collection.each(function (curTask) {
-                var taskView = new App.Views.TaskView({model: curTask});
-                this.$el.append(taskView.render().el);
+                if (curTask.get('status') != 'local') {       //model not in localstorage
+                    var taskView = new App.Views.TaskView({model: curTask});
+                    this.$el.append(taskView.render().el);
+                }
             }, this);
             return this;
         }
